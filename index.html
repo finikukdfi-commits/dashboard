@@ -7,12 +7,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
-:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bg4:#30363d;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);--text:#e6edf3;--text2:#8b949e;--text3:#484f58;--green:#3fb950;--green-bg:rgba(63,185,80,0.1);--red:#f85149;--red-bg:rgba(248,81,73,0.1);--amber:#d29922;--amber-bg:rgba(210,153,34,0.1);--blue:#58a6ff;--blue-bg:rgba(88,166,255,0.08);--purple:#bc8cff;}
+:root{--bg:#f5f6fa;--bg2:#ffffff;--bg3:#eef0f5;--bg4:#dde1ea;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);--text:#1a1d23;--text2:#5a6070;--text3:#9aa0b0;--green:#1a9e3f;--green-bg:rgba(26,158,63,0.08);--red:#d93025;--red-bg:rgba(217,48,37,0.08);--amber:#b45309;--amber-bg:rgba(180,83,9,0.08);--blue:#1a6ed8;--blue-bg:rgba(26,110,216,0.07);--purple:#6d3fc0;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5;}
 
 /* HEADER */
-.header{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(13,17,23,0.95);backdrop-filter:blur(12px);z-index:100;gap:16px;flex-wrap:wrap;}
+.header{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(245,246,250,0.96);backdrop-filter:blur(12px);z-index:100;gap:16px;flex-wrap:wrap;}
 .header-left{display:flex;align-items:center;gap:14px;}
 .logo{width:36px;height:36px;background:linear-gradient(135deg,#58a6ff,#bc8cff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
 .h-title{font-size:15px;font-weight:500;}
@@ -40,7 +40,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .f-sep{width:1px;height:16px;background:var(--border2);}
 
 /* LOADING */
-#loading{position:fixed;inset:0;background:rgba(13,17,23,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px;}
+#loading{position:fixed;inset:0;background:rgba(245,246,250,0.94);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px;}
 .spinner{width:40px;height:40px;border:3px solid var(--bg4);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 #load-text{font-size:13px;color:var(--text2);}
@@ -85,13 +85,13 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--tex
 .table-card .card-header{padding:14px 16px 0;}
 .tbl-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
-th{padding:8px 12px;text-align:right;color:var(--text3);font-weight:400;font-size:11px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:var(--bg);white-space:nowrap;}
+th{padding:8px 12px;text-align:right;color:var(--text3);font-weight:400;font-size:11px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:var(--bg3);white-space:nowrap;}
 th:first-child{text-align:left;}
 td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:12px;text-align:right;white-space:nowrap;}
 td:first-child{color:var(--text);font-family:'IBM Plex Sans',sans-serif;text-align:left;}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:var(--bg3);}
-tr.total-row td{background:var(--bg3);color:var(--text);font-weight:500;border-top:1px solid var(--border2);}
+tr.total-row td{background:var(--bg3);color:var(--text);font-weight:600;border-top:1px solid var(--border2);}
 .pct-badge{font-size:11px;padding:1px 6px;border-radius:3px;margin-left:4px;display:inline-block;}
 .pct-badge.up{background:var(--green-bg);color:var(--green);}
 .pct-badge.down{background:var(--red-bg);color:var(--red);}
@@ -294,7 +294,7 @@ tr.total-row td{background:var(--bg3);color:var(--text);font-weight:500;border-t
 // ═══════════════════════════════════════════════════════
 //  КОНФИГУРАЦИЯ — только эта строка нужна для замены URL
 // ═══════════════════════════════════════════════════════
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwlcj59jjYKAj1mQ-OAw5LwIlUmxqqajjWLvC3dM9ak8YCEHj4MH7Qc6h2dcMdPbEtK/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2BjTps8sq_ihSeQ0de732F1WnMAomnLYNgHYu2S4ypE_87VOMaFFiSR9QIufttbfQ/exec';
 
 // ═══════════════════════════════════════════════════════
 //  ГЛОБАЛЬНЫЙ СТЕЙТ
@@ -654,11 +654,11 @@ const BASE_OPTS = {
   animation:{duration:400},
   plugins:{
     legend:{display:false},
-    tooltip:{backgroundColor:'#161b22',titleColor:'#e6edf3',bodyColor:'#8b949e',borderColor:'rgba(255,255,255,0.12)',borderWidth:1,padding:10}
+    tooltip:{backgroundColor:'#ffffff',titleColor:'#1a1d23',bodyColor:'#5a6070',borderColor:'rgba(0,0,0,0.12)',borderWidth:1,padding:10}
   },
   scales:{
-    x:{ticks:{color:'#484f58',font:{size:10},maxRotation:45,autoSkip:false},grid:{color:'rgba(255,255,255,0.04)'},border:{color:'transparent'}},
-    y:{ticks:{color:'#484f58',font:{size:10}},grid:{color:'rgba(255,255,255,0.06)'},border:{color:'transparent'}}
+    x:{ticks:{color:'#9aa0b0',font:{size:10},maxRotation:45,autoSkip:false},grid:{color:'rgba(255,255,255,0.04)'},border:{color:'transparent'}},
+    y:{ticks:{color:'#9aa0b0',font:{size:10}},grid:{color:'rgba(255,255,255,0.06)'},border:{color:'transparent'}}
   }
 };
 
@@ -703,7 +703,7 @@ function renderCharts() {
   const execPct = wMP.map((p,i)=>p?Math.round(wMF[i]/p*100):0);
   mkChart('c-exec-pct','line',wLabels,[
     {label:'%',data:execPct,borderColor:'#d29922',backgroundColor:'rgba(210,153,34,0.1)',borderWidth:2,fill:true,tension:0.35,pointRadius:3,pointBackgroundColor:'#d29922'}
-  ],{scales:{x:BASE_OPTS.scales.x,y:{...BASE_OPTS.scales.y,min:0,max:150,ticks:{callback:v=>v+'%',color:'#484f58',font:{size:10}}}}});
+  ],{scales:{x:BASE_OPTS.scales.x,y:{...BASE_OPTS.scales.y,min:0,max:150,ticks:{callback:v=>v+'%',color:'#9aa0b0',font:{size:10}}}}});
 
   // 3. Нарастающий итог надоев
   let cp=0,cf=0,cumP=[],cumF=[];
@@ -739,7 +739,7 @@ function renderCharts() {
   if(pc) charts['c-rev-pie'] = new Chart(pc,{
     type:'doughnut',
     data:{labels:['Astana Onim','Burabay Milk'],datasets:[{data:[aoTot,bmTot],backgroundColor:['rgba(88,166,255,0.7)','rgba(188,140,255,0.7)'],borderColor:['#58a6ff','#bc8cff'],borderWidth:1.5,hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#8b949e',font:{size:11},boxWidth:10,padding:14}},tooltip:{backgroundColor:'#161b22',titleColor:'#e6edf3',bodyColor:'#8b949e',borderColor:'rgba(255,255,255,0.12)',borderWidth:1}}}
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#8b949e',font:{size:11},boxWidth:10,padding:14}},tooltip:{backgroundColor:'#ffffff',titleColor:'#1a1d23',bodyColor:'#5a6070',borderColor:'rgba(0,0,0,0.12)',borderWidth:1}}}
   });
 
   // 8. Нарастающий итог выручки
