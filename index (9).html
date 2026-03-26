@@ -1,478 +1,167 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Дашборд производства 2026</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
-:root{
-  --bg:#f5f6fa;--bg2:#ffffff;--bg3:#eef0f5;--bg4:#dde1ea;
-  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);
-  --text:#1a1d23;--text2:#5a6070;--text3:#9aa0b0;
-  --green:#1a9e3f;--green-bg:rgba(26,158,63,0.09);
-  --red:#d93025;--red-bg:rgba(217,48,37,0.09);
-  --amber:#b45309;--amber-bg:rgba(180,83,9,0.09);
-  --blue:#1a6ed8;--blue-bg:rgba(26,110,216,0.07);
-  --purple:#6d3fc0;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5;}
-.header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(245,246,250,0.97);backdrop-filter:blur(12px);z-index:100;gap:12px;flex-wrap:wrap;}
-.header-left{display:flex;align-items:center;gap:12px;}
-.logo{width:34px;height:34px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
-.h-title{font-size:14px;font-weight:600;color:var(--text);}
-.h-sub{font-size:11px;color:var(--text3);margin-top:1px;}
-.nav-tabs{display:flex;gap:3px;}
-.nav-tab{padding:6px 14px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--text2);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;transition:all .15s;}
-.nav-tab:hover{background:var(--bg3);color:var(--text);}
-.nav-tab.active{background:var(--bg2);border-color:var(--border2);color:var(--text);font-weight:500;}
-.header-right{display:flex;align-items:center;gap:8px;}
-.badge{display:flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid transparent;}
-.badge.green{color:var(--green);background:var(--green-bg);border-color:rgba(26,158,63,0.2);}
-.badge.red{color:var(--red);background:var(--red-bg);border-color:rgba(217,48,37,0.2);}
-.badge.amber{color:var(--amber);background:var(--amber-bg);border-color:rgba(180,83,9,0.2);}
-.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.dot.live{animation:pulse 2s infinite;}
-#update-time{font-size:11px;color:var(--text3);}
-.filters{padding:9px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:var(--bg2);}
-.f-label{font-size:11px;color:var(--text3);white-space:nowrap;font-weight:500;}
-.f-btn{padding:4px 11px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text2);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;transition:all .15s;white-space:nowrap;}
-.f-btn:hover{border-color:var(--border2);color:var(--text);background:var(--bg3);}
-.f-btn.active{background:var(--blue-bg);border-color:rgba(26,110,216,0.35);color:var(--blue);font-weight:500;}
-.f-sep{width:1px;height:14px;background:var(--border2);}
-#loading{position:fixed;inset:0;background:rgba(245,246,250,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:14px;}
-.spinner{width:36px;height:36px;border:3px solid var(--bg4);border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg)}}
-#load-text{font-size:13px;color:var(--text2);}
-#loading.hidden{display:none;}
-.main{padding:18px 24px;}
-.page{display:none;}
-.page.active{display:block;}
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px;}
-.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden;transition:box-shadow .15s;}
-.kpi-card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.07);}
-.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,#2563eb);border-radius:10px 10px 0 0;}
-.kpi-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-weight:500;}
-.kpi-value{font-size:20px;font-weight:600;color:var(--text);font-family:'IBM Plex Mono',monospace;line-height:1.2;}
-.kpi-sub{font-size:11px;color:var(--text3);margin-top:3px;}
-.kpi-delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:4px;margin-top:6px;font-weight:500;}
-.kpi-delta.pos{background:var(--green-bg);color:var(--green);}
-.kpi-delta.neg{background:var(--red-bg);color:var(--red);}
-.kpi-delta.neu{background:var(--amber-bg);color:var(--amber);}
-.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px;}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-@media(max-width:900px){.grid-2-1,.grid-2{grid-template-columns:1fr;}}
-.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;}
-.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;}
-.card-title{font-size:12px;font-weight:600;color:var(--text);}
-.card-hint{font-size:11px;color:var(--text3);margin-top:2px;}
-.legend{display:flex;flex-wrap:wrap;gap:8px;}
-.legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);}
-.legend-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
-.chart-wrap{position:relative;}
-.table-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
-.tbl-wrap{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;font-size:12px;}
-th{padding:8px 11px;text-align:right;color:var(--text3);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:var(--bg3);white-space:nowrap;}
-th:first-child{text-align:left;}
-td{padding:8px 11px;border-bottom:1px solid var(--border);color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:11px;text-align:right;white-space:nowrap;}
-td:first-child{color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;text-align:left;font-weight:500;}
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:var(--bg3);}
-tr.total-row td{background:var(--bg3);color:var(--text);font-weight:600;border-top:1px solid var(--border2);}
-.pb{font-size:10px;padding:1px 5px;border-radius:3px;margin-left:3px;display:inline-block;font-weight:500;}
-.pb.up{background:var(--green-bg);color:var(--green);}
-.pb.dn{background:var(--red-bg);color:var(--red);}
-.pb.nu{background:var(--amber-bg);color:var(--amber);}
-.farm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
-@media(max-width:700px){.farm-grid{grid-template-columns:1fr;}}
-.farm-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;}
-.farm-name{font-size:13px;font-weight:600;margin-bottom:11px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
-.fdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.farm-metrics{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
-.fm-label{font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;}
-.fm-val{font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--text);font-weight:500;}
-.prog{height:3px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden;}
-.prog-fill{height:100%;border-radius:2px;transition:width .6s ease;}
-.fm-pct{font-size:10px;color:var(--text3);margin-top:3px;}
-.sec-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin:18px 0 9px;font-weight:600;}
-::-webkit-scrollbar{width:5px;height:5px;}
-::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px;}
-</style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a73e8; --bg: #f8f9fa; --card: #ffffff; --text: #3c4043;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+    .tab { padding: 10px 20px; cursor: pointer; border-radius: 8px; font-weight: 600; background: #eee; }
+    .tab.active { background: var(--primary); color: white; }
+    
+    .filters { display: flex; gap: 15px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    select, button { padding: 8px 12px; border-radius: 6px; border: 1px solid #dadce0; font-size: 14px; }
+    .btn-ytd { background: var(--primary); color: white; border: none; cursor: pointer; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .kpi-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); }
+    .kpi-title { font-size: 13px; color: #70757a; margin-bottom: 8px; }
+    .kpi-value { font-size: 24px; font-weight: 700; }
+    .kpi-plan { font-size: 12px; margin-top: 5px; }
+    .trend-up { color: #1e8e3e; } .trend-down { color: #d93025; }
+
+    .content-section { display: none; }
+    .content-section.active { display: block; }
+    
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; }
+    th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+    th { background: #f1f3f4; font-weight: 600; }
+    
+    .loader { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); display:flex; justify-content:center; align-items:center; z-index:100; }
+  </style>
 </head>
 <body>
 
-<div id="loading">
-  <div class="spinner"></div>
-  <div id="load-text">Загрузка данных из Google Sheets...</div>
-</div>
+<div id="loader" class="loader">Загрузка данных...</div>
 
 <div class="header">
-  <div class="header-left">
-    <div class="logo">🥛</div>
-    <div>
-      <div class="h-title">Дашборд производства 2026</div>
-      <div class="h-sub">Astana Onim + Burabay Milk</div>
-    </div>
-  </div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('prod',this)">Производство</button>
-    <button class="nav-tab" onclick="showPage('proc',this)">Переработка и реализация</button>
-  </div>
-  <div class="header-right">
-    <span id="update-time"></span>
-    <div id="status-badge" class="badge green"><div class="dot live"></div>Данные актуальны</div>
+  <h2>MOLOKO.PRO: Сводный Дашборд</h2>
+  <div class="filters">
+    <select id="farmFilter" onchange="updateDashboard()">
+      <option value="all">Все фермы</option>
+      <option value="Astana onim">Astana onim</option>
+      <option value="Burabay milk">Burabay milk</option>
+    </select>
+    <select id="monthFilter" onchange="updateDashboard()">
+      <option value="all">Весь период</option>
+    </select>
+    <button class="btn-ytd" onclick="setYTD()">С начала года</button>
   </div>
 </div>
 
-<div class="filters">
-  <span class="f-label">Период:</span>
-  <button class="f-btn active" onclick="setMonth('all',this)">Весь год</button>
-  <span id="month-btns"></span>
-  <div class="f-sep"></div>
-  <span class="f-label">Ферма:</span>
-  <button class="f-btn active" id="fb-all" onclick="setFarm('all',this)">Все</button>
-  <button class="f-btn" id="fb-ao" onclick="setFarm('astana onim',this)">Astana Onim</button>
-  <button class="f-btn" id="fb-bm" onclick="setFarm('burabay milk',this)">Burabay Milk</button>
+<div class="nav-tabs">
+  <div class="tab active" onclick="switchTab('production', this)">🚜 Производство</div>
+  <div class="tab" onclick="switchTab('processing', this)">🏗 Переработка</div>
+  <div class="tab" onclick="switchTab('finance', this)">💰 Финансы</div>
 </div>
 
-<div class="main">
-
-<div id="page-prod" class="page active">
-  <div class="kpi-grid" id="kpi-prod"></div>
-  <div class="grid-2-1">
-    <div class="chart-card">
-      <div class="card-header">
-        <div><div class="card-title">Надои (л) по неделям — план vs факт</div><div class="card-hint">Сумма суточных надоев</div></div>
-        <div class="legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>План</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Факт</div>
-        </div>
-      </div>
-      <div class="chart-wrap" style="height:210px"><canvas id="c-milk-pf"></canvas></div>
+<div id="production" class="content-section active">
+  <div class="kpi-grid" id="kpiProduction">
     </div>
-    <div class="chart-card">
-      <div class="card-header"><div><div class="card-title">Исполнение плана надоев %</div><div class="card-hint">По неделям</div></div></div>
-      <div class="chart-wrap" style="height:210px"><canvas id="c-exec-pct"></canvas></div>
-    </div>
-  </div>
-  <div class="farm-grid" id="farm-cards"></div>
-  <div class="sec-title">Сравнение план / факт за месяц</div>
-  <div class="table-card">
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr>
-          <th>Месяц</th>
-          <th>Надои план (л)</th><th>Надои факт (л)</th><th>Исп.</th>
-          <th>Поголовье план</th><th>Поголовье факт</th><th>Исп.</th>
-          <th>Дойных план</th><th>Дойных факт</th><th>Исп.</th>
-        </tr></thead>
-        <tbody id="tb-monthly"></tbody>
-      </table>
-    </div>
-  </div>
-  <div class="sec-title">Нарастающий итог — надои (план vs факт)</div>
-  <div class="chart-card" style="margin-bottom:12px">
-    <div class="card-header">
-      <div class="card-title">Нарастающий итог надоев по неделям</div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div>План нараст.</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Факт нараст.</div>
-      </div>
-    </div>
-    <div class="chart-wrap" style="height:190px"><canvas id="c-cum-milk"></canvas></div>
-  </div>
-  <div class="sec-title">Факт к факту — месяц к месяцу (МоМ)</div>
-  <div class="grid-2">
-    <div class="chart-card">
-      <div class="card-header"><div class="card-title">Надои — динамика МоМ</div></div>
-      <div class="chart-wrap" style="height:170px"><canvas id="c-mom-milk"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="card-header"><div class="card-title">Поголовье — динамика МоМ</div></div>
-      <div class="chart-wrap" style="height:170px"><canvas id="c-mom-herd"></canvas></div>
-    </div>
+  <div id="chartContainer">
+    <p style="text-align: center; color: #777;">[Здесь будет визуализация графиков из БД]</p>
   </div>
 </div>
 
-<div id="page-proc" class="page">
-  <div class="kpi-grid" id="kpi-proc"></div>
-  <div class="grid-2-1">
-    <div class="chart-card">
-      <div class="card-header">
-        <div><div class="card-title">Передано на переработку (л) — план vs факт</div></div>
-        <div class="legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>План</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Факт</div>
-        </div>
-      </div>
-      <div class="chart-wrap" style="height:210px"><canvas id="c-proc-pf"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="card-header"><div class="card-title">Доля по фермам (факт)</div></div>
-      <div class="chart-wrap" style="height:210px"><canvas id="c-proc-pie"></canvas></div>
-    </div>
-  </div>
-  <div class="sec-title">Сравнение план / факт по месяцам</div>
-  <div class="table-card">
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr>
-          <th>Месяц</th>
-          <th>AO план (л)</th><th>AO факт (л)</th><th>AO %</th>
-          <th>BM план (л)</th><th>BM факт (л)</th><th>BM %</th>
-          <th>Итого план (л)</th><th>Итого факт (л)</th><th>Итого %</th>
-        </tr></thead>
-        <tbody id="tb-proc"></tbody>
-      </table>
-    </div>
-  </div>
-  <div class="sec-title">Нарастающий итог — передано на переработку</div>
-  <div class="chart-card" style="margin-bottom:12px">
-    <div class="card-header">
-      <div class="card-title">Нарастающий итог по фермам</div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div>AO план</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>AO факт</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#c4b5fd"></div>BM план</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>BM факт</div>
-      </div>
-    </div>
-    <div class="chart-wrap" style="height:200px"><canvas id="c-cum-proc"></canvas></div>
-  </div>
-  <div class="sec-title">Факт к факту — месяц к месяцу (МоМ)</div>
-  <div class="grid-2">
-    <div class="chart-card">
-      <div class="card-header"><div class="card-title">Astana Onim — переработка МоМ</div></div>
-      <div class="chart-wrap" style="height:170px"><canvas id="c-ao-mom"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="card-header"><div class="card-title">Burabay Milk — переработка МоМ</div></div>
-      <div class="chart-wrap" style="height:170px"><canvas id="c-bm-mom"></canvas></div>
-    </div>
-  </div>
+<div id="processing" class="content-section">
+  <div class="kpi-grid" id="kpiProcessing"></div>
+  <table>
+    <thead><tr><th>Показатель</th><th>Факт</th><th>План</th><th>Исполнение</th></tr></thead>
+    <tbody id="processingTable"></tbody>
+  </table>
 </div>
 
+<div id="finance" class="content-section">
+  <div class="kpi-grid" id="kpiFinance"></div>
+  <div style="background: white; padding: 20px; border-radius: 12px;">
+    <h3>Сравнение Факт к Факту</h3>
+    <div id="financeComparison"></div>
+  </div>
 </div>
 
 <script>
-// Настройки URL
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2BjTps8sq_ihSeQ0de732F1WnMAomnLYNgHYu2S4ypE_87VOMaFFiSR9QIufttbfQ/exec';
+let rawData = [];
+let headers = [];
 
-let DB = [];
-let currentMonth = 'all';
-let currentFarm  = 'all';
-let charts = {};
+window.onload = function() {
+  google.script.run.withSuccessHandler(function(response) {
+    rawData = response.rows;
+    headers = response.headers;
+    populateFilters();
+    updateDashboard();
+    document.getElementById('loader').style.display = 'none';
+  }).getDashboardData();
+};
 
-const MO = ['янв.','февр.','март','апр.','май','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
-const MN = {'янв.':'Январь','февр.':'Февраль','март':'Март','апр.':'Апрель','май':'Май','июн.':'Июнь','июл.':'Июль','авг.':'Август','сент.':'Сентябрь','окт.':'Октябрь','нояб.':'Ноябрь','дек.':'Декабрь'};
-
-// ── ПАРСИНГ ──────────────────────────────────────────
-function parseSheet(rows) {
-  const result = [];
-  const MONTH_MAP  = {
-    'янв.':'янв.','янв':'янв.','февр.':'февр.','февр':'февр.','фев.':'февр.','фев':'февр.',
-    'мар.':'март','март':'март','мар':'март','апр.':'апр.','апр':'апр.','май':'май',
-    'июн.':'июн.','июн':'июн.','июл.':'июл.','июл':'июл.','авг.':'авг.','авг':'авг.',
-    'сент.':'сент.','сент':'сент.','сен.':'сент.','сен':'сент.','окт.':'окт.','окт':'окт.',
-    'нояб.':'нояб.','нояб':'нояб.','ноя.':'нояб.','ноя':'нояб.','дек.':'дек.','дек':'дек.'
-  };
-
-  for(let i = 1; i < rows.length; i++) {
-    const r = rows[i];
-    const farm = String(r[4]||'').trim().toLowerCase();
-    const pf   = String(r[5]||'').trim().toLowerCase();
-    
-    let month = MONTH_MAP[String(r[3]||'').trim().toLowerCase()] || '';
-    if(!month && r[0]) {
-      const d = new Date(r[0]);
-      if(!isNaN(d)) month = MO[d.getMonth()];
-    }
-    
-    const weekNum = parseInt(String(r[2]||'').replace(/\D/g,''))||0;
-    if(!farm || !weekNum || !month) continue;
-
-    const n = idx => {
-      const v = r[idx];
-      const x = parseFloat(String(v||'').replace(/\s/g,'').replace(',','.'));
-      return isNaN(x) ? 0 : x;
-    };
-
-    result.push({
-      month, week: weekNum, weekLabel: 'Н' + weekNum, farm,
-      isPlan: pf === 'план', isFact: pf === 'факт',
-      milk: n(6), herd: n(7), dairy: n(9), proc: n(13)
-    });
-  }
-  return result;
-}
-
-// ── АГРЕГАЦИЯ ─────────────────────────────────────────
-function getRows() {
-  return DB.filter(r => (currentMonth === 'all' || r.month === currentMonth) && (currentFarm === 'all' || r.farm === currentFarm));
-}
-
-function byWeek(rows) {
-  const map = {};
-  for(const r of rows) {
-    if(!map[r.week]) map[r.week] = {week:r.week, label:r.weekLabel, pm:0,fm:0, ph:0,fh:0, pd:0,fd:0, pp:0,fp:0};
-    const w = map[r.week];
-    if(r.isPlan){ w.pm+=r.milk; w.ph=Math.max(w.ph,r.herd); w.pd=Math.max(w.pd,r.dairy); w.pp+=r.proc; }
-    if(r.isFact){ w.fm+=r.milk; w.fh=Math.max(w.fh,r.herd); w.fd=Math.max(w.fd,r.dairy); w.fp+=r.proc; }
-  }
-  return Object.values(map).sort((a,b)=>a.week-b.week);
-}
-
-function byMonth(rows) {
-  const map = {};
-  for(const r of rows) {
-    if(!map[r.month]) map[r.month]={month:r.month,name:MN[r.month]||r.month, pm:0,fm:0,ph:0,fh:0,pd:0,fd:0,pp:0,fp:0};
-    const m = map[r.month];
-    if(r.isPlan){ m.pm+=r.milk; m.ph=Math.max(m.ph,r.herd); m.pd=Math.max(m.pd,r.dairy); m.pp+=r.proc; }
-    if(r.isFact){ m.fm+=r.milk; m.fh=Math.max(m.fh,r.herd); m.fd=Math.max(m.fd,r.dairy); m.fp+=r.proc; }
-  }
-  return MO.filter(k=>map[k]).map(k=>map[k]);
-}
-
-// ── УТИЛИТЫ ──────────────────────────────────────────
-const fmtN = n => Math.round(n).toLocaleString('ru');
-const pct  = (p,f) => p ? Math.round(f/p*100) : 0;
-const pb   = (p,f) => { const v=pct(p,f); const c=v>=100?'up':v>=85?'nu':'dn'; return `<span class="pb ${c}">${v}%</span>`; };
-
-function setStatus(s) {
-  const b = document.getElementById('status-badge');
-  if(s==='ok'){ 
-    b.className='badge green'; b.innerHTML='<div class="dot live"></div>Данные актуальны'; 
-    document.getElementById('update-time').textContent='Обновлено: '+new Date().toLocaleTimeString('ru'); 
-  } else if(s==='loading'){ 
-    b.className='badge amber'; b.innerHTML='<div class="dot"></div>Загрузка...'; 
-  } else { 
-    b.className='badge red'; b.innerHTML='<div class="dot"></div>Ошибка'; 
-  }
-}
-
-// ── РЕНДЕРИНГ КОМПОНЕНТОВ ────────────────────────────
-function renderKPI() {
-  const rows = getRows();
-  const weeks = byWeek(rows);
-  const tPM=weeks.reduce((s,w)=>s+w.pm,0), tFM=weeks.reduce((s,w)=>s+w.fm,0);
-  const tPH=weeks.length?Math.max(...weeks.map(w=>w.ph)):0, tFH=weeks.length?Math.max(...weeks.map(w=>w.fh)):0;
-  const mP=pct(tPM,tFM), hP=pct(tPH,tFH);
-
-  document.getElementById('kpi-prod').innerHTML=[
-    {label:'Надои (факт)', value:fmtN(tFM)+' л', sub:'план: '+fmtN(tPM), delta:mP+'%', cls:mP>=100?'pos':mP>=85?'neu':'neg', accent:'#2563eb'},
-    {label:'Исп. плана', value:mP+'%', sub:fmtN(tFM)+' из '+fmtN(tPM), delta:mP>=100?'↑ окей':'↓ ниже', cls:mP>=100?'pos':'neg', accent:'#16a34a'},
-    {label:'Поголовье', value:fmtN(tFH), sub:'план: '+fmtN(tPH), delta:hP+'%', cls:hP>=100?'pos':'neg', accent:'#7c3aed'},
-    {label:'Дней в базе', value:rows.filter(r=>r.isFact&&r.milk>0).length, sub:'записей за период', delta:'', cls:'', accent:'#9aa0b0'}
-  ].map(k=>`<div class="kpi-card" style="--accent:${k.accent}"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div><div class="kpi-sub">${k.sub}</div><div class="kpi-delta ${k.cls}">${k.delta}</div></div>`).join('');
-
-  const tPP=weeks.reduce((s,w)=>s+w.pp,0), tFP=weeks.reduce((s,w)=>s+w.fp,0);
-  const pP=pct(tPP,tFP);
-  document.getElementById('kpi-proc').innerHTML=[
-    {label:'Переработка', value:fmtN(tFP)+' л', sub:'план: '+fmtN(tPP), delta:pP+'%', cls:pP>=100?'pos':'neg', accent:'#2563eb'},
-    {label:'Доля выполнения', value:pP+'%', sub:'цель достигнута', delta:'', cls:'', accent:'#16a34a'}
-  ].map(k=>`<div class="kpi-card" style="--accent:${k.accent}"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div><div class="kpi-sub">${k.sub}</div><div class="kpi-delta ${k.cls}">${k.delta}</div></div>`).join('');
-}
-
-function renderFarmCards() {
-  document.getElementById('farm-cards').innerHTML = [
-    {name:'Astana Onim', key:'astana onim', color:'#2563eb'},
-    {name:'Burabay Milk', key:'burabay milk', color:'#7c3aed'}
-  ].map(f => {
-    const rows = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm===f.key);
-    const w = byWeek(rows);
-    const pm=w.reduce((s,x)=>s+x.pm,0), fm=w.reduce((s,x)=>s+x.fm,0);
-    return `<div class="farm-card"><div class="farm-name"><div class="fdot" style="background:${f.color}"></div>${f.name}</div><div class="fm-val">${fmtN(fm)} л</div><div class="fm-pct">${pct(pm,fm)}% выполнения плана</div></div>`;
-  }).join('');
-}
-
-function renderTables() {
-  const months = byMonth(getRows());
-  document.getElementById('tb-monthly').innerHTML = months.map(m=>`<tr><td>${m.name}</td><td>${fmtN(m.pm)}</td><td>${fmtN(m.fm)}</td><td>${pb(m.pm,m.fm)}</td><td>${fmtN(m.ph)}</td><td>${fmtN(m.fh)}</td><td>${pb(m.ph,m.fh)}</td><td>${fmtN(m.pd)}</td><td>${fmtN(m.fd)}</td><td>${pb(m.pd,m.fd)}</td></tr>`).join('');
-}
-
-// ── ГРАФИКИ ───────────────────────────────────────────
-function mkChart(id,type,labels,datasets,extra={}){
-  if(charts[id]) charts[id].destroy();
-  const el = document.getElementById(id);
-  if(!el) return;
-  charts[id] = new Chart(el,{
-    type, data:{labels,datasets}, 
-    options: Object.assign({responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}}, extra)
+function populateFilters() {
+  const monthIdx = headers.indexOf('Месяц');
+  const months = [...new Set(rawData.map(r => r[monthIdx]))];
+  const select = document.getElementById('monthFilter');
+  months.forEach(m => {
+    let opt = document.createElement('option');
+    opt.value = m; opt.innerText = m;
+    select.appendChild(opt);
   });
 }
 
-function renderCharts() {
-  const weeks = byWeek(getRows());
-  const wL = weeks.map(w=>w.label);
+function switchTab(tabId, el) {
+  document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  el.classList.add('active');
+}
 
-  mkChart('c-milk-pf','bar',wL,[
-    {label:'План',data:weeks.map(w=>w.pm),backgroundColor:'#2563eb28',borderColor:'#2563eb',borderWidth:1},
-    {label:'Факт',data:weeks.map(w=>w.fm),backgroundColor:'#16a34a',borderRadius:4}
-  ]);
+function updateDashboard() {
+  const farm = document.getElementById('farmFilter').value;
+  const month = document.getElementById('monthFilter').value;
+  const farmIdx = headers.indexOf('Ферма');
+  const monthIdx = headers.indexOf('Месяц');
+
+  // Фильтрация
+  const filtered = rawData.filter(r => {
+    const matchFarm = (farm === 'all' || r[farmIdx] === farm);
+    const matchMonth = (month === 'all' || r[monthIdx] === month);
+    return matchFarm && matchMonth;
+  });
+
+  renderProduction(filtered);
+  renderProcessing(filtered);
+  renderFinance(filtered);
+}
+
+function renderProduction(data) {
+  // Логика расчета KPI (Пример для валового надоя)
+  const valFactIdx = headers.indexOf('Валовый надой литрах факт');
+  const valPlanIdx = headers.indexOf('Валовый надой литрах план');
   
-  mkChart('c-exec-pct','line',wL,[{data:weeks.map(w=>pct(w.pm,w.fm)),borderColor:'#b45309',tension:0.4,fill:false}]);
+  let totalFact = 0, totalPlan = 0;
+  data.forEach(r => {
+    totalFact += Number(r[valFactIdx]) || 0;
+    totalPlan += Number(r[valPlanIdx]) || 0;
+  });
 
-  // Переработка пирог
-  const rows = getRows();
-  const ao = rows.filter(r=>r.farm==='astana onim'&&r.isFact).reduce((s,r)=>s+r.proc,0);
-  const bm = rows.filter(r=>r.farm==='burabay milk'&&r.isFact).reduce((s,r)=>s+r.proc,0);
-  mkChart('c-proc-pie','doughnut',['AO','BM'],[{data:[ao,bm],backgroundColor:['#2563eb','#7c3aed']}]);
+  const perc = totalPlan > 0 ? ((totalFact/totalPlan)*100).toFixed(1) : 0;
+  
+  document.getElementById('kpiProduction').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-title">Валовый Надой, л</div>
+      <div class="kpi-value">${totalFact.toLocaleString()}</div>
+      <div class="kpi-plan">План: ${totalPlan.toLocaleString()} (${perc}%)</div>
+    </div>
+    `;
 }
 
-// ── УПРАВЛЕНИЕ ────────────────────────────────────────
-function showPage(id, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  renderCharts();
+// Функции для остальных вкладок будут работать по такому же принципу фильтрации
+function renderProcessing(data) { /* Расчет переработки */ }
+function renderFinance(data) { /* Расчет финансов */ }
+
+function setYTD() {
+  document.getElementById('monthFilter').value = 'all';
+  updateDashboard();
 }
-
-function setMonth(m, btn) {
-  currentMonth = m;
-  document.querySelectorAll('#month-btns .f-btn, .filters > .f-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  refresh();
-}
-
-function setFarm(f, btn) {
-  currentFarm = f;
-  document.querySelectorAll('#fb-all, #fb-ao, #fb-bm').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  refresh();
-}
-
-function refresh() {
-  renderKPI();
-  renderFarmCards();
-  renderTables();
-  renderCharts();
-}
-
-async function init() {
-  try {
-    const res = await fetch(SCRIPT_URL);
-    const data = await res.json();
-    DB = parseSheet(data);
-    
-    const uniqueMonths = [...new Set(DB.map(r => r.month))].sort((a,b)=>MO.indexOf(a)-MO.indexOf(b));
-    document.getElementById('month-btns').innerHTML = uniqueMonths.map(m => `<button class="f-btn" onclick="setMonth('${m}', this)">${MN[m] || m}</button>`).join('');
-
-    document.getElementById('loading').classList.add('hidden');
-    setStatus('ok');
-    refresh();
-  } catch (e) {
-    console.error(e);
-    setStatus('error');
-  }
-}
-
-window.onload = init;
 </script>
 </body>
 </html>
