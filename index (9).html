@@ -1,44 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <base target="_top">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --primary: #1a73e8; --bg: #f8f9fa; --card: #ffffff; --text: #3c4043;
-    }
+    :root { --primary: #1a73e8; --bg: #f8f9fa; --card: #ffffff; --text: #3c4043; --success: #1e8e3e; --danger: #d93025; }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
     .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-    .tab { padding: 10px 20px; cursor: pointer; border-radius: 8px; font-weight: 600; background: #eee; }
-    .tab.active { background: var(--primary); color: white; }
+    .tab { padding: 10px 25px; cursor: pointer; border-radius: 8px; font-weight: 600; background: #e8eaed; transition: 0.3s; }
+    .tab.active { background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(26,115,232,0.3); }
     
-    .filters { display: flex; gap: 15px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    select, button { padding: 8px 12px; border-radius: 6px; border: 1px solid #dadce0; font-size: 14px; }
-    .btn-ytd { background: var(--primary); color: white; border: none; cursor: pointer; }
+    .filters { display: flex; gap: 15px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    select, button { padding: 10px 15px; border-radius: 8px; border: 1px solid #dadce0; font-size: 14px; outline: none; }
+    .btn-ytd { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: 600; }
+    .btn-ytd:hover { background: #1557b0; }
 
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-    .kpi-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); }
-    .kpi-title { font-size: 13px; color: #70757a; margin-bottom: 8px; }
-    .kpi-value { font-size: 24px; font-weight: 700; }
-    .kpi-plan { font-size: 12px; margin-top: 5px; }
-    .trend-up { color: #1e8e3e; } .trend-down { color: #d93025; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .kpi-card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-top: 5px solid var(--primary); transition: transform 0.2s; }
+    .kpi-card:hover { transform: translateY(-5px); }
+    .kpi-title { font-size: 14px; color: #5f6368; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .kpi-value { font-size: 28px; font-weight: 700; color: #202124; }
+    .kpi-sub { font-size: 13px; margin-top: 8px; display: flex; justify-content: space-between; }
+    .status-badge { padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+    .bg-up { background: #e6f4ea; color: var(--success); }
+    .bg-down { background: #fce8e6; color: var(--danger); }
 
-    .content-section { display: none; }
+    .content-section { display: none; animation: fadeIn 0.4s; }
     .content-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     
-    table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; }
-    th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
-    th { background: #f1f3f4; font-weight: 600; }
-    
-    .loader { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); display:flex; justify-content:center; align-items:center; z-index:100; }
+    .loader { position: fixed; top:0; left:0; width:100%; height:100%; background:white; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:1000; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-<div id="loader" class="loader">Загрузка данных...</div>
+<div id="loader" class="loader">
+  <div class="spinner"></div>
+  <p style="margin-top:15px; font-weight:600;">Синхронизация с БД...</p>
+</div>
 
 <div class="header">
-  <h2>MOLOKO.PRO: Сводный Дашборд</h2>
+  <div style="display:flex; align-items:center; gap:10px;">
+     <h2 style="margin:0;">MOLOKO.PRO</h2>
+     <span style="background:#e8f0fe; color:#1a73e8; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:bold;">LIVE ДАШБОРД</span>
+  </div>
   <div class="filters">
     <select id="farmFilter" onchange="updateDashboard()">
       <option value="all">Все фермы</option>
@@ -46,7 +54,7 @@
       <option value="Burabay milk">Burabay milk</option>
     </select>
     <select id="monthFilter" onchange="updateDashboard()">
-      <option value="all">Весь период</option>
+      <option value="all">Все месяцы</option>
     </select>
     <button class="btn-ytd" onclick="setYTD()">С начала года</button>
   </div>
@@ -59,46 +67,52 @@
 </div>
 
 <div id="production" class="content-section active">
-  <div class="kpi-grid" id="kpiProduction">
-    </div>
-  <div id="chartContainer">
-    <p style="text-align: center; color: #777;">[Здесь будет визуализация графиков из БД]</p>
-  </div>
+  <div class="kpi-grid" id="kpiProduction"></div>
 </div>
 
 <div id="processing" class="content-section">
   <div class="kpi-grid" id="kpiProcessing"></div>
-  <table>
-    <thead><tr><th>Показатель</th><th>Факт</th><th>План</th><th>Исполнение</th></tr></thead>
-    <tbody id="processingTable"></tbody>
-  </table>
 </div>
 
 <div id="finance" class="content-section">
   <div class="kpi-grid" id="kpiFinance"></div>
-  <div style="background: white; padding: 20px; border-radius: 12px;">
-    <h3>Сравнение Факт к Факту</h3>
-    <div id="financeComparison"></div>
-  </div>
 </div>
 
 <script>
+// Твой персональный API скрипт
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxA0paz1ERb10Ts_4qRldi5Sp9jsbFfiY6cswZpOQzzIuAlUojyF0BxsR3xWN4MPulj/exec";
+
 let rawData = [];
 let headers = [];
 
 window.onload = function() {
-  google.script.run.withSuccessHandler(function(response) {
-    rawData = response.rows;
-    headers = response.headers;
-    populateFilters();
-    updateDashboard();
-    document.getElementById('loader').style.display = 'none';
-  }).getDashboardData();
+  // Загружаем данные напрямую через твой веб-хук
+  fetch(SCRIPT_URL)
+    .then(response => response.json())
+    .then(data => {
+      rawData = data.rows;
+      headers = data.headers;
+      populateFilters();
+      updateDashboard();
+      document.getElementById('loader').style.display = 'none';
+    })
+    .catch(err => {
+      console.error("Ошибка загрузки:", err);
+      // Если веб-хук не отвечает, пробуем стандартный метод Apps Script
+      google.script.run.withSuccessHandler(function(res) {
+        rawData = res.rows;
+        headers = res.headers;
+        populateFilters();
+        updateDashboard();
+        document.getElementById('loader').style.display = 'none';
+      }).getDashboardData();
+    });
 };
 
 function populateFilters() {
   const monthIdx = headers.indexOf('Месяц');
-  const months = [...new Set(rawData.map(r => r[monthIdx]))];
+  if(monthIdx === -1) return;
+  const months = [...new Set(rawData.map(r => r[monthIdx]))].filter(m => m);
   const select = document.getElementById('monthFilter');
   months.forEach(m => {
     let opt = document.createElement('option');
@@ -120,43 +134,73 @@ function updateDashboard() {
   const farmIdx = headers.indexOf('Ферма');
   const monthIdx = headers.indexOf('Месяц');
 
-  // Фильтрация
   const filtered = rawData.filter(r => {
     const matchFarm = (farm === 'all' || r[farmIdx] === farm);
     const matchMonth = (month === 'all' || r[monthIdx] === month);
     return matchFarm && matchMonth;
   });
 
-  renderProduction(filtered);
-  renderProcessing(filtered);
-  renderFinance(filtered);
+  renderStats(filtered);
 }
 
-function renderProduction(data) {
-  // Логика расчета KPI (Пример для валового надоя)
-  const valFactIdx = headers.indexOf('Валовый надой литрах факт');
-  const valPlanIdx = headers.indexOf('Валовый надой литрах план');
-  
-  let totalFact = 0, totalPlan = 0;
-  data.forEach(r => {
-    totalFact += Number(r[valFactIdx]) || 0;
-    totalPlan += Number(r[valPlanIdx]) || 0;
-  });
+function renderStats(data) {
+  const getSum = (colName) => {
+    const idx = headers.indexOf(colName);
+    return idx === -1 ? 0 : data.reduce((sum, row) => sum + (Number(row[idx]) || 0), 0);
+  };
 
-  const perc = totalPlan > 0 ? ((totalFact/totalPlan)*100).toFixed(1) : 0;
-  
+  const getAvg = (colName) => {
+    const idx = headers.indexOf(colName);
+    if (idx === -1 || data.length === 0) return 0;
+    const vals = data.map(r => Number(r[idx])).filter(v => !isNaN(v));
+    return vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length) : 0;
+  };
+
+  // 1. ПРОИЗВОДСТВО
+  const vFact = getSum('Валовый надой литрах факт');
+  const vPlan = getSum('Валовый надой литрах план');
+  const dFact = getAvg('Кол-во дойных коров факт');
+  const dPlan = getAvg('Кол-во дойных коров план');
+
   document.getElementById('kpiProduction').innerHTML = `
-    <div class="kpi-card">
-      <div class="kpi-title">Валовый Надой, л</div>
-      <div class="kpi-value">${totalFact.toLocaleString()}</div>
-      <div class="kpi-plan">План: ${totalPlan.toLocaleString()} (${perc}%)</div>
-    </div>
-    `;
+    ${createCard("Валовый Надой (л)", vFact, vPlan)}
+    ${createCard("Дойное стадо (гол)", dFact, dPlan)}
+    ${createCard("Жирность (%)", getAvg('Жирность факт'), getAvg('Жирность план'), true)}
+    ${createCard("Кислотность (°T)", getAvg('Кислотность факт'), getAvg('Кислотность план'), true)}
+  `;
+
+  // 2. ПЕРЕРАБОТКА (Пример логики)
+  const pFact = getSum('Передано на переработку факт');
+  const pPlan = getSum('Передано на переработку план');
+  document.getElementById('kpiProcessing').innerHTML = `
+    ${createCard("На переработку (л)", pFact, pPlan)}
+  `;
+
+  // 3. ФИНАНСЫ
+  const revFact = getSum('Выручка факт');
+  const revPlan = getSum('Выручка план');
+  document.getElementById('kpiFinance').innerHTML = `
+    ${createCard("Выручка (Тенге)", revFact, revPlan)}
+  `;
 }
 
-// Функции для остальных вкладок будут работать по такому же принципу фильтрации
-function renderProcessing(data) { /* Расчет переработки */ }
-function renderFinance(data) { /* Расчет финансов */ }
+function createCard(title, fact, plan, isAvg = false) {
+  const val = isAvg ? fact.toFixed(2) : Math.round(fact).toLocaleString();
+  const pVal = isAvg ? plan.toFixed(2) : Math.round(plan).toLocaleString();
+  const perc = plan > 0 ? Math.round((fact/plan)*100) : 0;
+  const statusClass = perc >= 100 ? "bg-up" : "bg-down";
+
+  return `
+    <div class="kpi-card">
+      <div class="kpi-title">${title}</div>
+      <div class="kpi-value">${val}</div>
+      <div class="kpi-sub">
+        <span>План: ${pVal}</span>
+        <span class="status-badge ${statusClass}">${perc}%</span>
+      </div>
+    </div>
+  `;
+}
 
 function setYTD() {
   document.getElementById('monthFilter').value = 'all';
