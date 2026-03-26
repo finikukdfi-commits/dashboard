@@ -568,94 +568,99 @@ function renderCharts() {
   if(pc)charts['c-proc-pie']=new Chart(pc,{
     type:'doughnut',
     data:{labels:['Astana Onim','Burabay Milk'],datasets:[{data:[aoFP,bmFP],backgroundColor:['rgba(37,99,235,0.7)','rgba(124,58,237,0.7)'],borderColor:['#2563eb','#7c3aed'],borderWidth:1.5,hoverOffset:5}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#5a6070',font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#fff',titleColor:'#1a1d23',bodyColor:'#5a6070',borderColor:'rgba(0,0,0,0.1)',borderWidth:1}}}
-  });
+    options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => ` ${ctx.label}: ${fmtN(ctx.raw)} л (${pct(aoFP + bmFP, ctx.raw)}%)`
+                    }
+                }
+            }
+        }
+    });
 
-  // Нарастающий итог переработки
-  const aoW=byWeek(DB.filter(r=>r.farm==='astana onim'));
-  const bmW=byWeek(DB.filter(r=>r.farm==='burabay milk'));
-  const uW=[...new Set([...aoW,...bmW].map(w=>w.week))].sort((a,b)=>a-b);
-  let cap=0,caf=0,cbp=0,cbf=0,c1=[],c2=[],c3=[],c4=[],cL=[];
-  for(const wn of uW){
-    const aw=aoW.find(w=>w.week===wn)||{pp:0,fp:0};
-    const bw=bmW.find(w=>w.week===wn)||{pp:0,fp:0};
-    cap+=aw.pp;caf+=aw.fp;cbp+=bw.pp;cbf+=bw.fp;
-    c1.push(cap);c2.push(caf);c3.push(cbp);c4.push(cbf);cL.push('Н'+wn);
-  }
-  mkChart('c-cum-proc','line',cL,[
-    {label:'AO план',data:c1,borderColor:'#93c5fd',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1},
-    {label:'AO факт',data:c2,borderColor:'#2563eb',borderWidth:2,fill:false,tension:0.4,pointRadius:2},
-    {label:'BM план',data:c3,borderColor:'#c4b5fd',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1},
-    {label:'BM факт',data:c4,borderColor:'#7c3aed',borderWidth:2,fill:false,tension:0.4,pointRadius:2}
-  ]);
+    // MoM для переработки (отдельно по фермам)
+    const aoM = byMonth(DB.filter(r => r.farm === 'astana onim'));
+    const bmM = byMonth(DB.filter(r => r.farm === 'burabay milk'));
 
-  // МоМ по фермам
-  const aoMo=byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'));
-  const bmMo=byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'));
-  mkChart('c-ao-mom','bar',aoMo.map(m=>m.name.slice(0,3)),[
-    {label:'AO',data:aoMo.map(m=>m.fp),backgroundColor:aoMo.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:aoMo.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
-  ]);
-  mkChart('c-bm-mom','bar',bmMo.map(m=>m.name.slice(0,3)),[
-    {label:'BM',data:bmMo.map(m=>m.fp),backgroundColor:bmMo.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:bmMo.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
-  ]);
+    mkChart('c-ao-mom', 'bar', aoM.map(m => m.name.slice(0, 3)), [
+        { label: 'Факт AO', data: aoM.map(m => m.fp), backgroundColor: '#2563eb28', borderColor: '#2563eb', borderWidth: 1.5, borderRadius: 4 }
+    ]);
+
+    mkChart('c-bm-mom', 'bar', bmM.map(m => m.fp), backgroundColor: '#7c3aed28', borderColor: '#7c3aed', borderWidth: 1.5, borderRadius: 4 }
+    ]);
 }
 
-// ── НАВИГАЦИЯ ─────────────────────────────────────────
-function showPage(p,btn){
-  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
-  if(btn)btn.classList.add('active');
-  setTimeout(renderCharts,60);
-}
-function buildMonthBtns(){
-  const MO=['янв.','февр.','март','апр.','май','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
-  const found=[...new Set(DB.filter(r=>r.month).map(r=>r.month))].sort((a,b)=>MO.indexOf(a)-MO.indexOf(b));
-  const container=document.getElementById('month-btns');
-  if(!container)return;
-  container.innerHTML=found.map(m=>`<button class="f-btn" onclick="setMonth('${m}',this)">${MN[m]||m}</button>`).join('');
-}
-function setMonth(m,btn){
-  currentMonth=m;
-  document.querySelectorAll('.filters .f-btn').forEach(b=>b.classList.remove('active'));
-  // Активируем кнопку Весь год
-  const allBtn=document.querySelector('.filters .f-btn');
-  if(m==='all'&&allBtn)allBtn.classList.add('active');
-  if(btn)btn.classList.add('active');
-  renderAll();
-}
-function setFarm(f,btn){
-  currentFarm=f;
-  ['fb-all','fb-ao','fb-bm'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
-  btn.classList.add('active');
-  renderAll();
-}
-function renderAll(){
-  renderKPI();
-  renderFarmCards();
-  renderTables();
-  setTimeout(renderCharts,60);
+// ── ИНТЕРФЕЙС И НАВИГАЦИЯ ────────────────────────────
+function showPage(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    // Перерисовка графиков при смене вкладки (исправляет баг с размерами Chart.js)
+    renderCharts(); 
 }
 
-// ── ЗАГРУЗКА ──────────────────────────────────────────
-async function loadData(){
-  setStatus('loading');
-  try{
-    const res  = await fetch(SCRIPT_URL);
-    const json = await res.json();
-    const rawData = Array.isArray(json) ? json : (json.data || json.rows || []);
-    DB = parseSheet(rawData);
-    setStatus('ok');
-    buildMonthBtns();
-    renderAll();
-  }catch(e){
-    console.error(e);
-    setStatus('error');
-  }
+function setMonth(m, btn) {
+    currentMonth = m;
+    // Очищаем активность у всех кнопок месяцев
+    if (document.getElementById('month-btns')) {
+        document.querySelectorAll('#month-btns .f-btn').forEach(b => b.classList.remove('active'));
+    }
+    // Очищаем кнопку "Весь год"
+    document.querySelectorAll('.filters > .f-btn').forEach(b => {
+        if (b.textContent.includes('Весь год')) b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    refresh();
 }
 
-setInterval(loadData, 5*60*1000);
-loadData().finally(()=>{ document.getElementById('loading').classList.add('hidden'); });
+function setFarm(f, btn) {
+    currentFarm = f;
+    document.querySelectorAll('#fb-all, #fb-ao, #fb-bm').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    refresh();
+}
+
+function refresh() {
+    renderKPI();
+    renderFarmCards();
+    renderTables();
+    renderCharts();
+}
+
+// ── ЗАГРУЗКА ДАННЫХ ──────────────────────────────────
+async function init() {
+    setStatus('loading');
+    try {
+        const res = await fetch(SCRIPT_URL);
+        const data = await res.json();
+        DB = parseSheet(data);
+        
+        // Создаем кнопки месяцев динамически на основе данных из таблицы
+        const uniqueMonths = [...new Set(DB.map(r => r.month))].sort((a, b) => MO.indexOf(a) - MO.indexOf(b));
+        const btnContainer = document.getElementById('month-btns');
+        if (btnContainer) {
+            btnContainer.innerHTML = uniqueMonths.map(m => 
+                `<button class="f-btn" onclick="setMonth('${m}', this)">${MN[m] || m}</button>`
+            ).join('');
+        }
+
+        document.getElementById('loading').classList.add('hidden');
+        setStatus('ok');
+        refresh();
+    } catch (e) {
+        console.error(e);
+        setStatus('error');
+        document.getElementById('load-text').textContent = 'Ошибка загрузки. Проверьте SCRIPT_URL.';
+    }
+}
+
+window.onload = init;
 </script>
 </body>
 </html>
