@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дашборд производства 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#f5f6fa;--bg2:#ffffff;--bg3:#eef0f5;--bg4:#dde1ea;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);
+  --text:#1a1d23;--text2:#5a6070;--text3:#9aa0b0;
+  --green:#1a9e3f;--green-bg:rgba(26,158,63,0.09);
+  --red:#d93025;--red-bg:rgba(217,48,37,0.09);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.09);
+  --blue:#1a6ed8;--blue-bg:rgba(26,110,216,0.07);
+  --purple:#6d3fc0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5;}
+.header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(245,246,250,0.97);backdrop-filter:blur(12px);z-index:100;gap:12px;flex-wrap:wrap;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.logo{width:34px;height:34px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.h-title{font-size:14px;font-weight:600;color:var(--text);}
+.h-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.nav-tabs{display:flex;gap:3px;}
+.nav-tab{padding:6px 14px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--text2);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;transition:all .15s;}
+.nav-tab:hover{background:var(--bg3);color:var(--text);}
+.nav-tab.active{background:var(--bg2);border-color:var(--border2);color:var(--text);font-weight:500;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.badge{display:flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid transparent;}
+.badge.green{color:var(--green);background:var(--green-bg);border-color:rgba(26,158,63,0.2);}
+.badge.red{color:var(--red);background:var(--red-bg);border-color:rgba(217,48,37,0.2);}
+.badge.amber{color:var(--amber);background:var(--amber-bg);border-color:rgba(180,83,9,0.2);}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.dot.live{animation:pulse 2s infinite;}
+#update-time{font-size:11px;color:var(--text3);}
+.filters{padding:9px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:var(--bg2);}
+.f-label{font-size:11px;color:var(--text3);white-space:nowrap;font-weight:500;}
+.f-btn{padding:4px 11px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text2);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;transition:all .15s;white-space:nowrap;}
+.f-btn:hover{border-color:var(--border2);color:var(--text);background:var(--bg3);}
+.f-btn.active{background:var(--blue-bg);border-color:rgba(26,110,216,0.35);color:var(--blue);font-weight:500;}
+.f-sep{width:1px;height:14px;background:var(--border2);}
+#loading{position:fixed;inset:0;background:rgba(245,246,250,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:14px;}
+.spinner{width:36px;height:36px;border:3px solid var(--bg4);border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#load-text{font-size:13px;color:var(--text2);}
+#loading.hidden{display:none;}
+.main{padding:18px 24px;}
+.page{display:none;}
+.page.active{display:block;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px;}
+.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden;transition:box-shadow .15s;}
+.kpi-card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.07);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,#2563eb);border-radius:10px 10px 0 0;}
+.kpi-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-weight:500;}
+.kpi-value{font-size:20px;font-weight:600;color:var(--text);font-family:'IBM Plex Mono',monospace;line-height:1.2;}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:3px;}
+.kpi-delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:4px;margin-top:6px;font-weight:500;}
+.kpi-delta.pos{background:var(--green-bg);color:var(--green);}
+.kpi-delta.neg{background:var(--red-bg);color:var(--red);}
+.kpi-delta.neu{background:var(--amber-bg);color:var(--amber);}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+@media(max-width:900px){.grid-2-1,.grid-2{grid-template-columns:1fr;}}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;}
+.card-title{font-size:12px;font-weight:600;color:var(--text);}
+.card-hint{font-size:11px;color:var(--text3);margin-top:2px;}
+.legend{display:flex;flex-wrap:wrap;gap:8px;}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);}
+.legend-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.chart-wrap{position:relative;}
+.table-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{padding:8px 11px;text-align:right;color:var(--text3);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:var(--bg3);white-space:nowrap;}
+th:first-child{text-align:left;}
+td{padding:8px 11px;border-bottom:1px solid var(--border);color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:11px;text-align:right;white-space:nowrap;}
+td:first-child{color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;text-align:left;font-weight:500;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg3);}
+tr.total-row td{background:var(--bg3);color:var(--text);font-weight:600;border-top:1px solid var(--border2);}
+.pb{font-size:10px;padding:1px 5px;border-radius:3px;margin-left:3px;display:inline-block;font-weight:500;}
+.pb.up{background:var(--green-bg);color:var(--green);}
+.pb.dn{background:var(--red-bg);color:var(--red);}
+.pb.nu{background:var(--amber-bg);color:var(--amber);}
+.farm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+@media(max-width:700px){.farm-grid{grid-template-columns:1fr;}}
+.farm-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.farm-name{font-size:13px;font-weight:600;margin-bottom:11px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+.fdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.farm-metrics{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.fm-label{font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;}
+.fm-val{font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--text);font-weight:500;}
+.prog{height:3px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:2px;transition:width .6s ease;}
+.fm-pct{font-size:10px;color:var(--text3);margin-top:3px;}
+.sec-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin:18px 0 9px;font-weight:600;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div id="load-text">Загрузка данных из Google Sheets...</div>
+</div>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">🥛</div>
+    <div>
+      <div class="h-title">Дашборд производства 2026</div>
+      <div class="h-sub">Astana Onim + Burabay Milk</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('prod',this)">Производство</button>
+    <button class="nav-tab" onclick="showPage('proc',this)">Переработка и реализация</button>
+  </div>
+  <div class="header-right">
+    <span id="update-time"></span>
+    <div id="status-badge" class="badge green"><div class="dot live"></div>Данные актуальны</div>
+  </div>
+</div>
+
+<div class="filters">
+  <span class="f-label">Период:</span>
+  <button class="f-btn active" onclick="setMonth('all',this)">Весь год</button>
+  <span id="month-btns"></span>
+  <div class="f-sep"></div>
+  <span class="f-label">Ферма:</span>
+  <button class="f-btn active" id="fb-all" onclick="setFarm('all',this)">Все</button>
+  <button class="f-btn" id="fb-ao" onclick="setFarm('astana onim',this)">Astana Onim</button>
+  <button class="f-btn" id="fb-bm" onclick="setFarm('burabay milk',this)">Burabay Milk</button>
+</div>
+
+<div class="main">
+
+<div id="page-prod" class="page active">
+  <div class="kpi-grid" id="kpi-prod"></div>
+  <div class="grid-2-1">
+    <div class="chart-card">
+      <div class="card-header">
+        <div><div class="card-title">Надои (л) по неделям — план vs факт</div><div class="card-hint">Сумма суточных надоев</div></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>План</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Факт</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:210px"><canvas id="c-milk-pf"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="card-header"><div><div class="card-title">Исполнение плана надоев %</div><div class="card-hint">По неделям</div></div></div>
+      <div class="chart-wrap" style="height:210px"><canvas id="c-exec-pct"></canvas></div>
+    </div>
+  </div>
+  <div class="farm-grid" id="farm-cards"></div>
+  <div class="sec-title">Сравнение план / факт за месяц</div>
+  <div class="table-card">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Месяц</th>
+          <th>Надои план (л)</th><th>Надои факт (л)</th><th>Исп.</th>
+          <th>Поголовье план</th><th>Поголовье факт</th><th>Исп.</th>
+          <th>Дойных план</th><th>Дойных факт</th><th>Исп.</th>
+        </tr></thead>
+        <tbody id="tb-monthly"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="sec-title">Нарастающий итог — надои (план vs факт)</div>
+  <div class="chart-card" style="margin-bottom:12px">
+    <div class="card-header">
+      <div class="card-title">Нарастающий итог надоев по неделям</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div>План нараст.</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Факт нараст.</div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height:190px"><canvas id="c-cum-milk"></canvas></div>
+  </div>
+  <div class="sec-title">Факт к факту — месяц к месяцу (МоМ)</div>
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="card-header"><div class="card-title">Надои — динамика МоМ</div></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="c-mom-milk"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="card-header"><div class="card-title">Поголовье — динамика МоМ</div></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="c-mom-herd"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div id="page-proc" class="page">
+  <div class="kpi-grid" id="kpi-proc"></div>
+  <div class="grid-2-1">
+    <div class="chart-card">
+      <div class="card-header">
+        <div><div class="card-title">Передано на переработку (л) — план vs факт</div></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>План</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Факт</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:210px"><canvas id="c-proc-pf"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="card-header"><div class="card-title">Доля по фермам (факт)</div></div>
+      <div class="chart-wrap" style="height:210px"><canvas id="c-proc-pie"></canvas></div>
+    </div>
+  </div>
+  <div class="sec-title">Сравнение план / факт по месяцам</div>
+  <div class="table-card">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Месяц</th>
+          <th>AO план (л)</th><th>AO факт (л)</th><th>AO %</th>
+          <th>BM план (л)</th><th>BM факт (л)</th><th>BM %</th>
+          <th>Итого план (л)</th><th>Итого факт (л)</th><th>Итого %</th>
+        </tr></thead>
+        <tbody id="tb-proc"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="sec-title">Нарастающий итог — передано на переработку</div>
+  <div class="chart-card" style="margin-bottom:12px">
+    <div class="card-header">
+      <div class="card-title">Нарастающий итог по фермам</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div>AO план</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>AO факт</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c4b5fd"></div>BM план</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>BM факт</div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height:200px"><canvas id="c-cum-proc"></canvas></div>
+  </div>
+  <div class="sec-title">Факт к факту — месяц к месяцу (МоМ)</div>
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="card-header"><div class="card-title">Astana Onim — переработка МоМ</div></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="c-ao-mom"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="card-header"><div class="card-title">Burabay Milk — переработка МоМ</div></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="c-bm-mom"></canvas></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2BjTps8sq_ihSeQ0de732F1WnMAomnLYNgHYu2S4ypE_87VOMaFFiSR9QIufttbfQ/exec';
+
+let DB = [];
+let currentMonth = 'all';
+let currentFarm  = 'all';
+let charts = {};
+
+// ── ПАРСИНГ ──────────────────────────────────────────
+// Лист БД, строка 1 = заголовок, строка 2+ = данные
+// Колонки (0-based):
+// 0=Дата, 1=сокр.дата, 2=Неделя, 3=месяц, 4=Ферма, 5=план/факт
+// 6=Валовый надой (л), 7=Общее поголовье, 8=Приплод, 9=Дойное поголовье
+// 10=Надой на 1 гол, 11=Жирность, 12=Кислотность, 13=Передано на переработку
+function parseSheet(rows) {
+  const result = [];
+  for(let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const farm = String(r[4]||'').trim();
+    const pf   = String(r[5]||'').trim().toLowerCase();
+    // Определяем месяц из даты колонки A (ISO: 2026-01-31T19:00:00.000Z или DD.MM.YYYY)
+    const MONTH_KEYS = ['янв.','февр.','март','апр.','май','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
+    let month = '';
+    const dateVal = r[0];
+    if(dateVal) {
+      let mIdx = -1;
+      const ds = String(dateVal);
+      if(ds.includes('T') || (ds.includes('-') && ds.indexOf('-') === 4)) {
+        // ISO: 2026-03-26T19:00:00.000Z — берём месяц из строки напрямую
+        const mStr = ds.substring(5, 7);
+        mIdx = parseInt(mStr) - 1;
+      } else if(ds.includes('.')) {
+        // DD.MM.YYYY
+        const parts = ds.split('.');
+        if(parts.length >= 2) mIdx = parseInt(parts[1]) - 1;
+      }
+      if(mIdx >= 0 && mIdx <= 11) month = MONTH_KEYS[mIdx];
+    }
+    if(!month) continue;
+    const weekStr = String(r[2]||'').trim();
+    const weekNum = parseInt(weekStr.replace(/\D/g,''))||0;
+    if(!farm || !weekNum || !month) continue;
+    if(pf !== "план" && pf !== "факт") continue;
+
+    const n = idx => {
+      const v = r[idx];
+      const x = parseFloat(String(v||'').replace(/\s/g,'').replace(',','.'));
+      return isNaN(x) ? 0 : x;
+    };
+
+    result.push({
+      month,
+      week: weekNum,
+      weekLabel: 'Н' + weekNum,
+      farm: farm.toLowerCase(),
+      isPlan: pf === 'план',
+      isFact: pf === 'факт',
+      milk:  Math.min(n(6), 50000),
+      herd:  n(7),
+      calf:  n(8),
+      dairy: n(9),
+      proc:  n(13),
+    });
+  }
+  return result;
+}
+
+// ── АГРЕГАЦИЯ ─────────────────────────────────────────
+function getRows() {
+  return DB.filter(r => {
+    const mOk = currentMonth === 'all' || r.month === currentMonth;
+    const fOk = currentFarm  === 'all' || r.farm  === currentFarm;
+    return mOk && fOk;
+  });
+}
+
+function byWeek(rows) {
+  const map = {};
+  // Для плана: одинаковое значение повторяется каждый день — берём за неделю один раз (первую строку)
+  // Для факта: суммируем каждый день (реальные суточные данные)
+  const planSeen = {}; // week+farm — уже записали план этой недели
+  for(const r of rows) {
+    const key = r.week + '|' + r.farm;
+    if(!map[r.week]) map[r.week] = {week:r.week, label:r.weekLabel, pm:0,fm:0, ph:0,fh:0, pd:0,fd:0, pp:0,fp:0};
+    const w = map[r.week];
+    if(r.isPlan){
+      if(!planSeen[key]) {
+        // Берём план только один раз за неделю на ферму
+        w.pm+=r.milk; w.ph=Math.max(w.ph,r.herd); w.pd=Math.max(w.pd,r.dairy); w.pp+=r.proc;
+        planSeen[key]=true;
+      }
+    }
+    if(r.isFact){ w.fm+=r.milk; w.fh=Math.max(w.fh,r.herd); w.fd=Math.max(w.fd,r.dairy); w.fp+=r.proc; }
+  }
+  return Object.values(map).sort((a,b)=>a.week-b.week);
+}
+
+const MO = ['янв.','февр.','март','апр.','май','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
+const MN = {'янв.':'Январь','февр.':'Февраль','март':'Март','апр.':'Апрель','май':'Май','июн.':'Июнь','июл.':'Июль','авг.':'Август','сент.':'Сентябрь','окт.':'Октябрь','нояб.':'Ноябрь','дек.':'Декабрь'};
+
+function byMonth(rows) {
+  const map = {};
+  const planSeen = {}; // month+week+farm — план берём один раз за неделю
+  for(const r of rows) {
+    if(!map[r.month]) map[r.month]={month:r.month,name:MN[r.month]||r.month, pm:0,fm:0,ph:0,fh:0,pd:0,fd:0,pp:0,fp:0};
+    const m = map[r.month];
+    if(r.isPlan){
+      const key = r.month + '|' + r.week + '|' + r.farm;
+      if(!planSeen[key]) {
+        m.pm+=r.milk; m.ph=Math.max(m.ph,r.herd); m.pd=Math.max(m.pd,r.dairy); m.pp+=r.proc;
+        planSeen[key]=true;
+      }
+    }
+    if(r.isFact){ m.fm+=r.milk; m.fh=Math.max(m.fh,r.herd); m.fd=Math.max(m.fd,r.dairy); m.fp+=r.proc; }
+  }
+  return MO.filter(k=>map[k]).map(k=>map[k]);
+}
+
+// ── УТИЛИТЫ ──────────────────────────────────────────
+const fmtN = n => Math.round(n).toLocaleString('ru');
+const fmt  = n => n>=1e6?(n/1e6).toFixed(1)+'млн':n>=1e3?(n/1e3).toFixed(0)+'К':Math.round(n).toLocaleString('ru');
+const pct  = (p,f) => p ? Math.round(f/p*100) : 0;
+const pb   = (p,f) => { const v=pct(p,f); const c=v>=100?'up':v>=85?'nu':'dn'; return `<span class="pb ${c}">${v}%</span>`; };
+
+function setStatus(s) {
+  const b = document.getElementById('status-badge');
+  if(s==='ok'){ b.className='badge green'; b.innerHTML='<div class="dot live"></div>Данные актуальны'; document.getElementById('update-time').textContent='Обновлено: '+new Date().toLocaleTimeString('ru'); }
+  else if(s==='loading'){ b.className='badge amber'; b.innerHTML='<div class="dot"></div>Загрузка...'; }
+  else { b.className='badge red'; b.innerHTML='<div class="dot"></div>Офлайн'; }
+}
+
+// ── KPI ───────────────────────────────────────────────
+function renderKPI() {
+  const rows  = getRows();
+  const weeks = byWeek(rows);
+  const totPM = weeks.reduce((s,w)=>s+w.pm,0);
+  const totFM = weeks.reduce((s,w)=>s+w.fm,0);
+  const totPH = weeks.length ? Math.max(...weeks.map(w=>w.ph)) : 0;
+  const totFH = weeks.length ? Math.max(...weeks.map(w=>w.fh)) : 0;
+  const totPD = weeks.length ? Math.max(...weeks.map(w=>w.pd)) : 0;
+  const totFD = weeks.length ? Math.max(...weeks.map(w=>w.fd)) : 0;
+  const mPct=pct(totPM,totFM), hPct=pct(totPH,totFH), dPct=pct(totPD,totFD);
+
+  document.getElementById('kpi-prod').innerHTML=[
+    {label:'Надои (факт)',      value:fmtN(totFM)+' л',     sub:'план: '+fmtN(totPM)+' л', delta:mPct+'% плана',                cls:mPct>=100?'pos':mPct>=85?'neu':'neg', accent:'#2563eb'},
+    {label:'Исп. плана надоев', value:mPct+'%',              sub:fmtN(totFM)+' из '+fmtN(totPM), delta:mPct>=100?'↑ выполнен':mPct>=85?'∼ в норме':'↓ отставание', cls:mPct>=100?'pos':mPct>=85?'neu':'neg', accent:'#16a34a'},
+    {label:'Поголовье (факт)',  value:fmtN(totFH)+' гол',   sub:'план: '+fmtN(totPH),      delta:hPct+'%',                      cls:hPct>=100?'pos':hPct>=85?'neu':'neg', accent:'#7c3aed'},
+    {label:'Дойных (факт)',     value:fmtN(totFD)+' гол',   sub:'план: '+fmtN(totPD),      delta:dPct+'%',                      cls:dPct>=100?'pos':dPct>=85?'neu':'neg', accent:'#b45309'},
+    {label:'Недель с данными',  value:weeks.length+' нед',  sub:'по текущему фильтру',     delta:'',cls:'',accent:'#9aa0b0'},
+    {label:'Дней с данными',    value:rows.filter(r=>r.isFact&&r.milk>0).length+' дн', sub:'фактических записей', delta:'',cls:'',accent:'#9aa0b0'},
+  ].map(k=>`<div class="kpi-card" style="--accent:${k.accent}">
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value">${k.value}</div>
+    <div class="kpi-sub">${k.sub}</div>
+    ${k.delta?`<div class="kpi-delta ${k.cls}">${k.delta}</div>`:''}
+  </div>`).join('');
+
+  // Переработка KPI
+  const totPP = weeks.reduce((s,w)=>s+w.pp,0);
+  const totFP = weeks.reduce((s,w)=>s+w.fp,0);
+  const pPct  = pct(totPP,totFP);
+  const aoFP  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'&&r.isFact).reduce((s,r)=>s+r.proc,0);
+  const bmFP  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'&&r.isFact).reduce((s,r)=>s+r.proc,0);
+  const aoFM  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'&&r.isFact).reduce((s,r)=>s+r.milk,0);
+  const bmFM  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'&&r.isFact).reduce((s,r)=>s+r.milk,0);
+
+  document.getElementById('kpi-proc').innerHTML=[
+    {label:'Передано на переработку', value:fmtN(totFP)+' л', sub:'план: '+fmtN(totPP)+' л', delta:pPct+'%', cls:pPct>=100?'pos':pPct>=85?'neu':'neg', accent:'#2563eb'},
+    {label:'Исп. плана переработки',  value:pPct+'%', sub:fmtN(totFP)+' из '+fmtN(totPP), delta:pPct>=100?'↑ выполнен':pPct>=85?'∼ в норме':'↓ отставание', cls:pPct>=100?'pos':pPct>=85?'neu':'neg', accent:'#16a34a'},
+    {label:'Astana Onim — надои',     value:fmtN(aoFM)+' л', sub:'передано: '+fmtN(aoFP)+' л', delta:'', cls:'', accent:'#2563eb'},
+    {label:'Burabay Milk — надои',    value:fmtN(bmFM)+' л', sub:'передано: '+fmtN(bmFP)+' л', delta:'', cls:'', accent:'#7c3aed'},
+  ].map(k=>`<div class="kpi-card" style="--accent:${k.accent}">
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value">${k.value}</div>
+    <div class="kpi-sub">${k.sub}</div>
+    ${k.delta?`<div class="kpi-delta ${k.cls}">${k.delta}</div>`:''}
+  </div>`).join('');
+}
+
+// ── КАРТОЧКИ ФЕРМ ─────────────────────────────────────
+function renderFarmCards() {
+  document.getElementById('farm-cards').innerHTML = [
+    {name:'Astana Onim', key:'astana onim', color:'#2563eb'},
+    {name:'Burabay Milk',key:'burabay milk',color:'#7c3aed'},
+  ].map(f => {
+    const rows  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm===f.key);
+    const weeks = byWeek(rows);
+    const pm=weeks.reduce((s,w)=>s+w.pm,0), fm=weeks.reduce((s,w)=>s+w.fm,0);
+    const ph=weeks.length?Math.max(...weeks.map(w=>w.ph)):0, fh=weeks.length?Math.max(...weeks.map(w=>w.fh)):0;
+    const pp=weeks.reduce((s,w)=>s+w.pp,0), fp=weeks.reduce((s,w)=>s+w.fp,0);
+    const mp=pct(pm,fm), hp=pct(ph,fh), prp=pct(pp,fp);
+    return `<div class="farm-card">
+      <div class="farm-name"><div class="fdot" style="background:${f.color}"></div>${f.name}</div>
+      <div class="farm-metrics">
+        <div>
+          <div class="fm-label">Надои факт / план</div>
+          <div class="fm-val">${fmtN(fm)} / ${fmtN(pm)} л</div>
+          <div class="prog"><div class="prog-fill" style="width:${Math.min(mp,100)}%;background:${f.color}"></div></div>
+          <div class="fm-pct">${mp}% выполнения</div>
+        </div>
+        <div>
+          <div class="fm-label">Поголовье факт / план</div>
+          <div class="fm-val">${fmtN(fh)} / ${fmtN(ph)} гол</div>
+          <div class="prog"><div class="prog-fill" style="width:${Math.min(hp,100)}%;background:${f.color}"></div></div>
+          <div class="fm-pct">${hp}% выполнения</div>
+        </div>
+        <div>
+          <div class="fm-label">Переработка факт / план</div>
+          <div class="fm-val">${fmtN(fp)} / ${fmtN(pp)} л</div>
+          <div class="prog"><div class="prog-fill" style="width:${Math.min(prp,100)}%;background:${f.color}"></div></div>
+          <div class="fm-pct">${prp}% выполнения</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── ТАБЛИЦЫ ───────────────────────────────────────────
+function renderTables() {
+  // Производство
+  const months = byMonth(getRows());
+  let s={pm:0,fm:0,ph:0,fh:0,pd:0,fd:0};
+  const prodRows = months.map(m=>{
+    s.pm+=m.pm;s.fm+=m.fm;s.ph=Math.max(s.ph,m.ph);s.fh=Math.max(s.fh,m.fh);s.pd=Math.max(s.pd,m.pd);s.fd=Math.max(s.fd,m.fd);
+    return `<tr><td>${m.name}</td><td>${fmtN(m.pm)}</td><td>${fmtN(m.fm)}</td><td>${pb(m.pm,m.fm)}</td><td>${fmtN(m.ph)}</td><td>${fmtN(m.fh)}</td><td>${pb(m.ph,m.fh)}</td><td>${fmtN(m.pd)}</td><td>${fmtN(m.fd)}</td><td>${pb(m.pd,m.fd)}</td></tr>`;
+  });
+  prodRows.push(`<tr class="total-row"><td>Итого</td><td>${fmtN(s.pm)}</td><td>${fmtN(s.fm)}</td><td>${pb(s.pm,s.fm)}</td><td>${fmtN(s.ph)}</td><td>${fmtN(s.fh)}</td><td>${pb(s.ph,s.fh)}</td><td>${fmtN(s.pd)}</td><td>${fmtN(s.fd)}</td><td>${pb(s.pd,s.fd)}</td></tr>`);
+  document.getElementById('tb-monthly').innerHTML = prodRows.join('');
+
+  // Переработка по фермам
+  const aoM = byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'));
+  const bmM = byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'));
+  const allMK = [...new Set([...aoM,...bmM].map(m=>m.month))].sort((a,b)=>MO.indexOf(a)-MO.indexOf(b));
+  let ps={ap:0,af:0,bp:0,bf:0};
+  const procRows = allMK.map(mk=>{
+    const ao=aoM.find(m=>m.month===mk)||{pp:0,fp:0};
+    const bm=bmM.find(m=>m.month===mk)||{pp:0,fp:0};
+    ps.ap+=ao.pp;ps.af+=ao.fp;ps.bp+=bm.pp;ps.bf+=bm.fp;
+    return `<tr><td>${MN[mk]||mk}</td><td>${fmtN(ao.pp)}</td><td>${fmtN(ao.fp)}</td><td>${pb(ao.pp,ao.fp)}</td><td>${fmtN(bm.pp)}</td><td>${fmtN(bm.fp)}</td><td>${pb(bm.pp,bm.fp)}</td><td>${fmtN(ao.pp+bm.pp)}</td><td>${fmtN(ao.fp+bm.fp)}</td><td>${pb(ao.pp+bm.pp,ao.fp+bm.fp)}</td></tr>`;
+  });
+  procRows.push(`<tr class="total-row"><td>Итого</td><td>${fmtN(ps.ap)}</td><td>${fmtN(ps.af)}</td><td>${pb(ps.ap,ps.af)}</td><td>${fmtN(ps.bp)}</td><td>${fmtN(ps.bf)}</td><td>${pb(ps.bp,ps.bf)}</td><td>${fmtN(ps.ap+ps.bp)}</td><td>${fmtN(ps.af+ps.bf)}</td><td>${pb(ps.ap+ps.bp,ps.af+ps.bf)}</td></tr>`);
+  document.getElementById('tb-proc').innerHTML = procRows.join('');
+}
+
+// ── ГРАФИКИ ───────────────────────────────────────────
+const BOPTS = {
+  responsive:true, maintainAspectRatio:false, animation:{duration:350},
+  plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',titleColor:'#1a1d23',bodyColor:'#5a6070',borderColor:'rgba(0,0,0,0.1)',borderWidth:1,padding:9}},
+  scales:{
+    x:{ticks:{color:'#9aa0b0',font:{size:10},maxRotation:45,autoSkip:true},grid:{color:'rgba(0,0,0,0.04)'},border:{color:'transparent'}},
+    y:{ticks:{color:'#9aa0b0',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'},border:{color:'transparent'}}
+  }
+};
+function dm(a,b){const r=Object.assign({},a);for(const k in b){if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k]))r[k]=dm(a[k]||{},b[k]);else r[k]=b[k];}return r;}
+function mkChart(id,type,labels,datasets,extra={}){
+  if(charts[id])charts[id].destroy();
+  const el=document.getElementById(id);if(!el)return;
+  charts[id]=new Chart(el,{type,data:{labels,datasets},options:dm(BOPTS,extra)});
+}
+const CLRS=['#2563eb','#16a34a','#b45309','#7c3aed','#dc2626'];
+
+function renderCharts() {
+  const rows   = getRows();
+  const weeks  = byWeek(rows);
+  const months = byMonth(rows);
+  const wL = weeks.map(w=>w.label);
+  const mL = months.map(m=>m.name.slice(0,3));
+
+  // Надои план/факт
+  mkChart('c-milk-pf','bar',wL,[
+    {label:'План',data:weeks.map(w=>w.pm),backgroundColor:'rgba(37,99,235,0.15)',borderColor:'#2563eb',borderWidth:1.5,borderRadius:3,order:2},
+    {label:'Факт',data:weeks.map(w=>w.fm),backgroundColor:'rgba(22,163,74,0.2)',borderColor:'#16a34a',borderWidth:1.5,borderRadius:3,order:1}
+  ]);
+
+  // % исполнения
+  mkChart('c-exec-pct','line',wL,[
+    {label:'%',data:weeks.map(w=>w.pm?Math.round(w.fm/w.pm*100):0),borderColor:'#b45309',backgroundColor:'rgba(180,83,9,0.07)',borderWidth:2,fill:true,tension:0.35,pointRadius:3,pointBackgroundColor:'#b45309'}
+  ],{scales:{x:BOPTS.scales.x,y:{...BOPTS.scales.y,min:0,max:150,ticks:{callback:v=>v+'%',color:'#9aa0b0',font:{size:10}}}}});
+
+  // Нарастающий итог
+  const allW = byWeek(DB.filter(r=>currentFarm==='all'||r.farm===currentFarm));
+  let cp=0,cf=0,cP=[],cF=[];
+  for(const w of allW){cp+=w.pm;cf+=w.fm;cP.push(cp);cF.push(cf);}
+  mkChart('c-cum-milk','line',allW.map(w=>w.label),[
+    {label:'План',data:cP,borderColor:'#93c5fd',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1.5},
+    {label:'Факт',data:cF,borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.05)',borderWidth:2,fill:true,tension:0.4,pointRadius:2}
+  ]);
+
+  // МоМ надои
+  mkChart('c-mom-milk','bar',mL,[
+    {label:'Факт',data:months.map(m=>m.fm),backgroundColor:months.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:months.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
+  ]);
+
+  // МоМ поголовье
+  mkChart('c-mom-herd','bar',mL,[
+    {label:'Факт',data:months.map(m=>m.fh),backgroundColor:months.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:months.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
+  ]);
+
+  // Переработка план/факт
+  mkChart('c-proc-pf','bar',wL,[
+    {label:'План',data:weeks.map(w=>w.pp),backgroundColor:'rgba(37,99,235,0.15)',borderColor:'#2563eb',borderWidth:1.5,borderRadius:3,order:2},
+    {label:'Факт',data:weeks.map(w=>w.fp),backgroundColor:'rgba(22,163,74,0.2)',borderColor:'#16a34a',borderWidth:1.5,borderRadius:3,order:1}
+  ]);
+
+  // Пирог
+  const aoFP=DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'&&r.isFact).reduce((s,r)=>s+r.proc,0);
+  const bmFP=DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'&&r.isFact).reduce((s,r)=>s+r.proc,0);
+  if(charts['c-proc-pie'])charts['c-proc-pie'].destroy();
+  const pc=document.getElementById('c-proc-pie');
+  if(pc)charts['c-proc-pie']=new Chart(pc,{
+    type:'doughnut',
+    data:{labels:['Astana Onim','Burabay Milk'],datasets:[{data:[aoFP,bmFP],backgroundColor:['rgba(37,99,235,0.7)','rgba(124,58,237,0.7)'],borderColor:['#2563eb','#7c3aed'],borderWidth:1.5,hoverOffset:5}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#5a6070',font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#fff',titleColor:'#1a1d23',bodyColor:'#5a6070',borderColor:'rgba(0,0,0,0.1)',borderWidth:1}}}
+  });
+
+  // Нарастающий итог переработки
+  const aoW=byWeek(DB.filter(r=>r.farm==='astana onim'));
+  const bmW=byWeek(DB.filter(r=>r.farm==='burabay milk'));
+  const uW=[...new Set([...aoW,...bmW].map(w=>w.week))].sort((a,b)=>a-b);
+  let cap=0,caf=0,cbp=0,cbf=0,c1=[],c2=[],c3=[],c4=[],cL=[];
+  for(const wn of uW){
+    const aw=aoW.find(w=>w.week===wn)||{pp:0,fp:0};
+    const bw=bmW.find(w=>w.week===wn)||{pp:0,fp:0};
+    cap+=aw.pp;caf+=aw.fp;cbp+=bw.pp;cbf+=bw.fp;
+    c1.push(cap);c2.push(caf);c3.push(cbp);c4.push(cbf);cL.push('Н'+wn);
+  }
+  mkChart('c-cum-proc','line',cL,[
+    {label:'AO план',data:c1,borderColor:'#93c5fd',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1},
+    {label:'AO факт',data:c2,borderColor:'#2563eb',borderWidth:2,fill:false,tension:0.4,pointRadius:2},
+    {label:'BM план',data:c3,borderColor:'#c4b5fd',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1},
+    {label:'BM факт',data:c4,borderColor:'#7c3aed',borderWidth:2,fill:false,tension:0.4,pointRadius:2}
+  ]);
+
+  // МоМ по фермам
+  const aoMo=byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'));
+  const bmMo=byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'));
+  mkChart('c-ao-mom','bar',aoMo.map(m=>m.name.slice(0,3)),[
+    {label:'AO',data:aoMo.map(m=>m.fp),backgroundColor:aoMo.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:aoMo.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
+  ]);
+  mkChart('c-bm-mom','bar',bmMo.map(m=>m.name.slice(0,3)),[
+    {label:'BM',data:bmMo.map(m=>m.fp),backgroundColor:bmMo.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:bmMo.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
+  ]);
+}
+
+// ── НАВИГАЦИЯ ─────────────────────────────────────────
+function showPage(p,btn){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(btn)btn.classList.add('active');
+  setTimeout(renderCharts,60);
+}
+function buildMonthBtns(){
+  const MO=['янв.','февр.','март','апр.','май','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
+  const found=[...new Set(DB.filter(r=>r.month).map(r=>r.month))].sort((a,b)=>MO.indexOf(a)-MO.indexOf(b));
+  const container=document.getElementById('month-btns');
+  if(!container)return;
+  container.innerHTML=found.map(m=>`<button class="f-btn" onclick="setMonth('${m}',this)">${MN[m]||m}</button>`).join('');
+}
+function setMonth(m,btn){
+  currentMonth=m;
+  document.querySelectorAll('.filters .f-btn').forEach(b=>b.classList.remove('active'));
+  // Активируем кнопку Весь год
+  const allBtn=document.querySelector('.filters .f-btn');
+  if(m==='all'&&allBtn)allBtn.classList.add('active');
+  if(btn)btn.classList.add('active');
+  renderAll();
+}
+function setFarm(f,btn){
+  currentFarm=f;
+  ['fb-all','fb-ao','fb-bm'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
+  btn.classList.add('active');
+  renderAll();
+}
+function renderAll(){
+  renderKPI();
+  renderFarmCards();
+  renderTables();
+  setTimeout(renderCharts,60);
+}
+
+// ── ЗАГРУЗКА ──────────────────────────────────────────
+async function loadData(){
+  setStatus('loading');
+  try{
+    const res  = await fetch(SCRIPT_URL);
+    const json = await res.json();
+    const rawData = Array.isArray(json) ? json : (json.data || json.rows || []);
+    DB = parseSheet(rawData);
+    setStatus('ok');
+    buildMonthBtns();
+    renderAll();
+  }catch(e){
+    console.error(e);
+    setStatus('error');
+  }
+}
+
+setInterval(loadData, 5*60*1000);
+loadData().finally(()=>{ document.getElementById('loading').classList.add('hidden'); });
+</script>
+</body>
+</html>
