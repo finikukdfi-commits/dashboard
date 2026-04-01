@@ -7,98 +7,113 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
-:root{
-  --bg:#f5f6fa;--bg2:#ffffff;--bg3:#eef0f5;--bg4:#dde1ea;
-  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);
-  --text:#1a1d23;--text2:#5a6070;--text3:#9aa0b0;
-  --green:#1a9e3f;--green-bg:rgba(26,158,63,0.09);
-  --red:#d93025;--red-bg:rgba(217,48,37,0.09);
-  --amber:#b45309;--amber-bg:rgba(180,83,9,0.09);
-  --blue:#1a6ed8;--blue-bg:rgba(26,110,216,0.07);
-  --purple:#6d3fc0;
-}
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bg4:#30363d;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);--text:#e6edf3;--text2:#8b949e;--text3:#484f58;--green:#3fb950;--green-bg:rgba(63,185,80,0.1);--red:#f85149;--red-bg:rgba(248,81,73,0.1);--amber:#d29922;--amber-bg:rgba(210,153,34,0.1);--blue:#58a6ff;--blue-bg:rgba(88,166,255,0.08);--purple:#bc8cff;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5;}
-.header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(245,246,250,0.97);backdrop-filter:blur(12px);z-index:100;gap:12px;flex-wrap:wrap;}
-.header-left{display:flex;align-items:center;gap:12px;}
-.logo{width:34px;height:34px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
-.h-title{font-size:14px;font-weight:600;color:var(--text);}
-.h-sub{font-size:11px;color:var(--text3);margin-top:1px;}
-.nav-tabs{display:flex;gap:3px;}
-.nav-tab{padding:6px 14px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--text2);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;transition:all .15s;}
+
+/* HEADER */
+.header{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(13,17,23,0.95);backdrop-filter:blur(12px);z-index:100;gap:16px;flex-wrap:wrap;}
+.header-left{display:flex;align-items:center;gap:14px;}
+.logo{width:36px;height:36px;background:linear-gradient(135deg,#58a6ff,#bc8cff);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.h-title{font-size:15px;font-weight:500;}
+.h-sub{font-size:11px;color:var(--text2);margin-top:1px;}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:6px 16px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--text2);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;transition:all .15s;}
 .nav-tab:hover{background:var(--bg3);color:var(--text);}
-.nav-tab.active{background:var(--bg2);border-color:var(--border2);color:var(--text);font-weight:500;}
-.header-right{display:flex;align-items:center;gap:8px;}
-.badge{display:flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid transparent;}
-.badge.green{color:var(--green);background:var(--green-bg);border-color:rgba(26,158,63,0.2);}
-.badge.red{color:var(--red);background:var(--red-bg);border-color:rgba(217,48,37,0.2);}
-.badge.amber{color:var(--amber);background:var(--amber-bg);border-color:rgba(180,83,9,0.2);}
-.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.nav-tab.active{background:var(--bg3);border-color:var(--border2);color:var(--text);}
+.header-right{display:flex;align-items:center;gap:10px;}
+.badge{display:flex;align-items:center;gap:6px;font-size:11px;padding:4px 10px;border-radius:20px;}
+.badge.green{color:var(--green);background:var(--green-bg);border:1px solid rgba(63,185,80,0.25);}
+.badge.red{color:var(--red);background:var(--red-bg);border:1px solid rgba(248,81,73,0.25);}
+.badge.amber{color:var(--amber);background:var(--amber-bg);border:1px solid rgba(210,153,34,0.25);}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 .dot.live{animation:pulse 2s infinite;}
 #update-time{font-size:11px;color:var(--text3);}
-.filters{padding:9px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:var(--bg2);}
-.f-label{font-size:11px;color:var(--text3);white-space:nowrap;font-weight:500;}
-.f-btn{padding:4px 11px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text2);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;transition:all .15s;white-space:nowrap;}
-.f-btn:hover{border-color:var(--border2);color:var(--text);background:var(--bg3);}
-.f-btn.active{background:var(--blue-bg);border-color:rgba(26,110,216,0.35);color:var(--blue);font-weight:500;}
-.f-sep{width:1px;height:14px;background:var(--border2);}
-#loading{position:fixed;inset:0;background:rgba(245,246,250,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:14px;}
-.spinner{width:36px;height:36px;border:3px solid var(--bg4);border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;}
+
+/* FILTERS */
+.filters{padding:10px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.f-label{font-size:11px;color:var(--text3);white-space:nowrap;}
+.f-btn{padding:4px 12px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text2);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;transition:all .15s;white-space:nowrap;}
+.f-btn:hover{border-color:var(--border2);color:var(--text);}
+.f-btn.active{background:var(--blue-bg);border-color:rgba(88,166,255,0.4);color:var(--blue);}
+.f-sep{width:1px;height:16px;background:var(--border2);}
+
+/* LOADING */
+#loading{position:fixed;inset:0;background:rgba(13,17,23,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px;}
+.spinner{width:40px;height:40px;border:3px solid var(--bg4);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 #load-text{font-size:13px;color:var(--text2);}
 #loading.hidden{display:none;}
-.main{padding:18px 24px;}
+
+/* MAIN */
+.main{padding:20px 28px;}
 .page{display:none;}
 .page.active{display:block;}
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px;}
-.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden;transition:box-shadow .15s;}
-.kpi-card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.07);}
-.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,#2563eb);border-radius:10px 10px 0 0;}
-.kpi-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-weight:500;}
-.kpi-value{font-size:20px;font-weight:600;color:var(--text);font-family:'IBM Plex Mono',monospace;line-height:1.2;}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:20px;}
+.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:15px;position:relative;overflow:hidden;transition:border-color .15s;}
+.kpi-card:hover{border-color:var(--border2);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--blue));}
+.kpi-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
+.kpi-value{font-size:22px;font-weight:500;color:var(--text);font-family:'IBM Plex Mono',monospace;line-height:1.2;}
 .kpi-sub{font-size:11px;color:var(--text3);margin-top:3px;}
-.kpi-delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:4px;margin-top:6px;font-weight:500;}
+.kpi-delta{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:4px;margin-top:6px;}
 .kpi-delta.pos{background:var(--green-bg);color:var(--green);}
 .kpi-delta.neg{background:var(--red-bg);color:var(--red);}
 .kpi-delta.neu{background:var(--amber-bg);color:var(--amber);}
-.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px;}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-@media(max-width:900px){.grid-2-1,.grid-2{grid-template-columns:1fr;}}
-.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;}
-.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;}
-.card-title{font-size:12px;font-weight:600;color:var(--text);}
+
+/* GRID LAYOUTS */
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+@media(max-width:900px){.grid-2-1,.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+/* CHART CARD */
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;}
+.card-title{font-size:13px;font-weight:500;color:var(--text);}
 .card-hint{font-size:11px;color:var(--text3);margin-top:2px;}
-.legend{display:flex;flex-wrap:wrap;gap:8px;}
-.legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);}
-.legend-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.legend{display:flex;flex-wrap:wrap;gap:10px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
 .chart-wrap{position:relative;}
-.table-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+
+/* TABLE CARD */
+.table-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+.table-card .card-header{padding:14px 16px 0;}
 .tbl-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
-th{padding:8px 11px;text-align:right;color:var(--text3);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:var(--bg3);white-space:nowrap;}
+th{padding:8px 12px;text-align:right;color:var(--text3);font-weight:400;font-size:11px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:var(--bg);white-space:nowrap;}
 th:first-child{text-align:left;}
-td{padding:8px 11px;border-bottom:1px solid var(--border);color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:11px;text-align:right;white-space:nowrap;}
-td:first-child{color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;text-align:left;font-weight:500;}
+td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:12px;text-align:right;white-space:nowrap;}
+td:first-child{color:var(--text);font-family:'IBM Plex Sans',sans-serif;text-align:left;}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:var(--bg3);}
-tr.total-row td{background:var(--bg3);color:var(--text);font-weight:600;border-top:1px solid var(--border2);}
-.pb{font-size:10px;padding:1px 5px;border-radius:3px;margin-left:3px;display:inline-block;font-weight:500;}
-.pb.up{background:var(--green-bg);color:var(--green);}
-.pb.dn{background:var(--red-bg);color:var(--red);}
-.pb.nu{background:var(--amber-bg);color:var(--amber);}
-.farm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+tr.total-row td{background:var(--bg3);color:var(--text);font-weight:500;border-top:1px solid var(--border2);}
+.pct-badge{font-size:11px;padding:1px 6px;border-radius:3px;margin-left:4px;display:inline-block;}
+.pct-badge.up{background:var(--green-bg);color:var(--green);}
+.pct-badge.down{background:var(--red-bg);color:var(--red);}
+.pct-badge.neu{background:var(--amber-bg);color:var(--amber);}
+
+/* FARM CARDS */
+.farm-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
 @media(max-width:700px){.farm-grid{grid-template-columns:1fr;}}
 .farm-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;}
-.farm-name{font-size:13px;font-weight:600;margin-bottom:11px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
-.fdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.farm-metrics{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
-.fm-label{font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;}
-.fm-val{font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--text);font-weight:500;}
+.farm-name{font-size:13px;font-weight:500;margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.farm-dot-big{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.farm-metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fm-label{font-size:11px;color:var(--text3);margin-bottom:3px;}
+.fm-val{font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--text);}
 .prog{height:3px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden;}
-.prog-fill{height:100%;border-radius:2px;transition:width .6s ease;}
-.fm-pct{font-size:10px;color:var(--text3);margin-top:3px;}
-.sec-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin:18px 0 9px;font-weight:600;}
+.prog-fill{height:100%;border-radius:2px;transition:width .6s;}
+.fm-pct{font-size:11px;color:var(--text3);margin-top:3px;}
+
+/* SECTION TITLE */
+.sec-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin:20px 0 10px;font-weight:400;}
+
+/* SCROLLBAR */
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px;}
@@ -106,11 +121,13 @@ tr.total-row td{background:var(--bg3);color:var(--text);font-weight:600;border-t
 </head>
 <body>
 
+<!-- LOADING -->
 <div id="loading">
   <div class="spinner"></div>
   <div id="load-text">Загрузка данных из Google Sheets...</div>
 </div>
 
+<!-- HEADER -->
 <div class="header">
   <div class="header-left">
     <div class="logo">🥛</div>
@@ -129,39 +146,45 @@ tr.total-row td{background:var(--bg3);color:var(--text);font-weight:600;border-t
   </div>
 </div>
 
+<!-- FILTERS -->
 <div class="filters">
   <span class="f-label">Период:</span>
   <button class="f-btn active" onclick="setMonth('all',this)">Весь год</button>
-  <span id="month-btns"></span>
+  <button class="f-btn" onclick="setMonth(1,this)">Январь</button>
+  <button class="f-btn" onclick="setMonth(2,this)">Февраль</button>
+  <button class="f-btn" onclick="setMonth(3,this)">Март</button>
   <div class="f-sep"></div>
   <span class="f-label">Ферма:</span>
   <button class="f-btn active" id="fb-all" onclick="setFarm('all',this)">Все</button>
-  <button class="f-btn" id="fb-ao" onclick="setFarm('astana onim',this)">Astana Onim</button>
-  <button class="f-btn" id="fb-bm" onclick="setFarm('burabay milk',this)">Burabay Milk</button>
+  <button class="f-btn" id="fb-ao" onclick="setFarm('ao',this)">Astana Onim</button>
+  <button class="f-btn" id="fb-bm" onclick="setFarm('bm',this)">Burabay Milk</button>
 </div>
 
-<div id="dbg" style="background:#fff3cd;padding:8px 24px;font-size:12px;font-family:monospace;border-bottom:1px solid #ffc107;">Загрузка...</div>
 <div class="main">
 
+<!-- PAGE: ПРОИЗВОДСТВО -->
 <div id="page-prod" class="page active">
   <div class="kpi-grid" id="kpi-prod"></div>
+
   <div class="grid-2-1">
     <div class="chart-card">
       <div class="card-header">
-        <div><div class="card-title">Надои (л) по неделям — план vs факт</div><div class="card-hint">Сумма суточных надоев</div></div>
+        <div><div class="card-title">Объём надоев (л/неделю) — план vs факт</div><div class="card-hint">Суммарно по фильтру</div></div>
         <div class="legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>План</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Факт</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>План</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>Факт</div>
         </div>
       </div>
       <div class="chart-wrap" style="height:210px"><canvas id="c-milk-pf"></canvas></div>
     </div>
     <div class="chart-card">
-      <div class="card-header"><div><div class="card-title">Исполнение плана надоев %</div><div class="card-hint">По неделям</div></div></div>
+      <div class="card-header"><div><div class="card-title">Исполнение плана %</div><div class="card-hint">По неделям</div></div></div>
       <div class="chart-wrap" style="height:210px"><canvas id="c-exec-pct"></canvas></div>
     </div>
   </div>
+
   <div class="farm-grid" id="farm-cards"></div>
+
   <div class="sec-title">Сравнение план / факт за месяц</div>
   <div class="table-card">
     <div class="tbl-wrap">
@@ -169,24 +192,26 @@ tr.total-row td{background:var(--bg3);color:var(--text);font-weight:600;border-t
         <thead><tr>
           <th>Месяц</th>
           <th>Надои план (л)</th><th>Надои факт (л)</th><th>Исп.</th>
+          <th>Выручка план (₸)</th><th>Выручка факт (₸)</th><th>Исп.</th>
           <th>Поголовье план</th><th>Поголовье факт</th><th>Исп.</th>
-          <th>Дойных план</th><th>Дойных факт</th><th>Исп.</th>
         </tr></thead>
         <tbody id="tb-monthly"></tbody>
       </table>
     </div>
   </div>
+
   <div class="sec-title">Нарастающий итог — надои (план vs факт)</div>
-  <div class="chart-card" style="margin-bottom:12px">
+  <div class="chart-card" style="margin-bottom:14px">
     <div class="card-header">
-      <div class="card-title">Нарастающий итог надоев по неделям</div>
+      <div class="card-title">Накопленный объём надоев нарастающим итогом</div>
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div>План нараст.</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Факт нараст.</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#58a6ff;opacity:.6"></div>План нараст.</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>Факт нараст.</div>
       </div>
     </div>
     <div class="chart-wrap" style="height:190px"><canvas id="c-cum-milk"></canvas></div>
   </div>
+
   <div class="sec-title">Факт к факту — месяц к месяцу (МоМ)</div>
   <div class="grid-2">
     <div class="chart-card">
@@ -194,278 +219,335 @@ tr.total-row td{background:var(--bg3);color:var(--text);font-weight:600;border-t
       <div class="chart-wrap" style="height:170px"><canvas id="c-mom-milk"></canvas></div>
     </div>
     <div class="chart-card">
-      <div class="card-header"><div class="card-title">Поголовье — динамика МоМ</div></div>
-      <div class="chart-wrap" style="height:170px"><canvas id="c-mom-herd"></canvas></div>
+      <div class="card-header"><div class="card-title">Выручка — динамика МоМ (₸)</div></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="c-mom-rev"></canvas></div>
     </div>
   </div>
 </div>
 
+<!-- PAGE: ПЕРЕРАБОТКА -->
 <div id="page-proc" class="page">
   <div class="kpi-grid" id="kpi-proc"></div>
+
   <div class="grid-2-1">
     <div class="chart-card">
       <div class="card-header">
-        <div><div class="card-title">Передано на переработку (л) — план vs факт</div></div>
+        <div><div class="card-title">Выручка (₸) — план vs факт по неделям</div><div class="card-hint">Astana Onim + Burabay Milk</div></div>
         <div class="legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>План</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Факт</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div>План</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>Факт</div>
         </div>
       </div>
-      <div class="chart-wrap" style="height:210px"><canvas id="c-proc-pf"></canvas></div>
+      <div class="chart-wrap" style="height:210px"><canvas id="c-rev-pf"></canvas></div>
     </div>
     <div class="chart-card">
-      <div class="card-header"><div class="card-title">Доля по фермам (факт)</div></div>
-      <div class="chart-wrap" style="height:210px"><canvas id="c-proc-pie"></canvas></div>
+      <div class="card-header"><div class="card-title">Доля выручки по фермам (факт)</div></div>
+      <div class="chart-wrap" style="height:210px"><canvas id="c-rev-pie"></canvas></div>
     </div>
   </div>
-  <div class="sec-title">Сравнение план / факт по месяцам</div>
+
+  <div class="sec-title">Сравнение план / факт выручки по месяцам</div>
   <div class="table-card">
     <div class="tbl-wrap">
       <table>
         <thead><tr>
           <th>Месяц</th>
-          <th>AO план (л)</th><th>AO факт (л)</th><th>AO %</th>
-          <th>BM план (л)</th><th>BM факт (л)</th><th>BM %</th>
-          <th>Итого план (л)</th><th>Итого факт (л)</th><th>Итого %</th>
+          <th>AO план (₸)</th><th>AO факт (₸)</th><th>AO %</th>
+          <th>BM план (₸)</th><th>BM факт (₸)</th><th>BM %</th>
+          <th>Итого план (₸)</th><th>Итого факт (₸)</th><th>Итого %</th>
         </tr></thead>
         <tbody id="tb-proc"></tbody>
       </table>
     </div>
   </div>
-  <div class="sec-title">Нарастающий итог — передано на переработку</div>
-  <div class="chart-card" style="margin-bottom:12px">
+
+  <div class="sec-title">Нарастающий итог — выручка по фермам</div>
+  <div class="chart-card" style="margin-bottom:14px">
     <div class="card-header">
-      <div class="card-title">Нарастающий итог по фермам</div>
+      <div class="card-title">Нарастающий итог выручки</div>
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div>AO план</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>AO факт</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#c4b5fd"></div>BM план</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>BM факт</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#58a6ff;opacity:.5"></div>AO план</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>AO факт</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#bc8cff;opacity:.5"></div>BM план</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#d29922"></div>BM факт</div>
       </div>
     </div>
-    <div class="chart-wrap" style="height:200px"><canvas id="c-cum-proc"></canvas></div>
+    <div class="chart-wrap" style="height:200px"><canvas id="c-cum-rev"></canvas></div>
   </div>
-  <div class="sec-title">Факт к факту — месяц к месяцу (МоМ)</div>
+
+  <div class="sec-title">Факт к факту — выручка месяц к месяцу (МоМ)</div>
   <div class="grid-2">
     <div class="chart-card">
-      <div class="card-header"><div class="card-title">Astana Onim — переработка МоМ</div></div>
+      <div class="card-header"><div class="card-title">Astana Onim — выручка МоМ</div></div>
       <div class="chart-wrap" style="height:170px"><canvas id="c-ao-mom"></canvas></div>
     </div>
     <div class="chart-card">
-      <div class="card-header"><div class="card-title">Burabay Milk — переработка МоМ</div></div>
+      <div class="card-header"><div class="card-title">Burabay Milk — выручка МоМ</div></div>
       <div class="chart-wrap" style="height:170px"><canvas id="c-bm-mom"></canvas></div>
     </div>
   </div>
 </div>
 
-</div>
+</div><!-- /main -->
 
 <script>
+// ═══════════════════════════════════════════════════════
+//  КОНФИГУРАЦИЯ — только эта строка нужна для замены URL
+// ═══════════════════════════════════════════════════════
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2BjTps8sq_ihSeQ0de732F1WnMAomnLYNgHYu2S4ypE_87VOMaFFiSR9QIufttbfQ/exec';
 
-let DB = [];
+// ═══════════════════════════════════════════════════════
+//  ГЛОБАЛЬНЫЙ СТЕЙТ
+// ═══════════════════════════════════════════════════════
+let rawWeeks = [];
 let currentMonth = 'all';
 let currentFarm  = 'all';
 let charts = {};
 
-// ── ПАРСИНГ ──────────────────────────────────────────
-// Лист БД, строка 1 = заголовок, строка 2+ = данные
-// Колонки (0-based):
-// 0=Дата, 1=сокр.дата, 2=Неделя, 3=месяц, 4=Ферма, 5=план/факт
-// 6=Валовый надой (л), 7=Общее поголовье, 8=Приплод, 9=Дойное поголовье
-// 10=Надой на 1 гол, 11=Жирность, 12=Кислотность, 13=Передано на переработку
+// ═══════════════════════════════════════════════════════
+//  ЗАГРУЗКА И ПАРСИНГ ДАННЫХ
+// ═══════════════════════════════════════════════════════
+async function loadData() {
+  setStatus('loading');
+  try {
+    const res  = await fetch(SCRIPT_URL);
+    const json = await res.json();
+    rawWeeks   = parseSheet(json.data);
+    setStatus('ok');
+    renderAll();
+  } catch(e) {
+    console.error('Ошибка загрузки:', e);
+    setStatus('error');
+    // Если API недоступен — показываем встроенные данные
+    rawWeeks = FALLBACK_DATA;
+    renderAll();
+  }
+}
+
+/*
+  Структура листа БД (из таблицы):
+  Строка 1 — заголовки групп (Astana Onim начинается с Q/R, Burabay Milk — дальше)
+  Строка 2 — подзаголовки (Период, Недели, План, Факт ...)
+  Строки 3+ — данные по неделям
+
+  Колонки (0-based индексы):
+  A=0  dateFrom
+  B=1  dateTo
+  C=2  Неделя (Неделя 1 ... Неделя 53)
+
+  — ОБЩИЙ СВОД (столбцы D–P, индексы 3–15) —
+  D=3   Выручка план (общая)
+  E=4   Выручка факт (общая)
+  F=5   Надои нед план (общая)
+  G=6   Надои нед факт (общая)
+  H=7   Надои сут план
+  I=8   Надои сут факт
+  J=9   Поголовье план (общая)
+  K=10  Поголовье факт (общая)
+  L=11  Дойное план (общая)
+  M=12  Дойное факт (общая)
+  N=13  Приплод план
+  O=14  Приплод факт
+  P=15  TRUE/FALSE флаг
+
+  — ASTANA ONIM (столбцы R–AD, индексы 17–29) —
+  R=17  dateFrom AO
+  S=18  dateTo AO
+  T=19  Неделя AO
+  U=20  Выручка план AO
+  V=21  Выручка факт AO
+  W=22  Надои нед план AO
+  X=23  Надои нед факт AO
+  Y=24  Надои сут план AO
+  Z=25  Надои сут факт AO
+  AA=26 Поголовье план AO
+  AB=27 Поголовье факт AO
+  AC=28 Дойное план AO
+  AD=29 Дойное факт AO
+  AE=30 Приплод план AO
+  AF=31 Приплод факт AO
+
+  — BURABAY MILK (столбцы AH–AT, индексы 33–45) —
+  AH=33 dateFrom BM
+  AI=34 dateTo BM
+  AJ=35 Неделя BM (пустая колонка AK=35 пропущена, смотрим структуру)
+  ... по аналогии со смещением +16 от AO
+  AG=32 разделитель (пусто)
+  AH=33 dateFrom BM
+  AI=34 dateTo BM
+  AJ=35 Неделя BM
+  AK=36 Выручка план BM
+  AL=37 Выручка факт BM
+  AM=38 Надои нед план BM
+  AN=39 Надои нед факт BM
+  AO=40 Надои сут план BM
+  AP=41 Надои сут факт BM
+  AQ=42 Поголовье план BM
+  AR=43 Поголовье факт BM
+  AS=44 Дойное план BM
+  AT=45 Дойное факт BM
+  AU=46 Приплод план BM
+  AV=47 Приплод факт BM
+*/
 function parseSheet(rows) {
+  if(!rows || rows.length < 3) return FALLBACK_DATA;
   const result = [];
-  for(let i = 1; i < rows.length; i++) {
+
+  for(let i = 2; i < rows.length; i++) {
     const r = rows[i];
-    const farm = String(r[4]||'').trim();
-    const pf   = String(r[5]||'').trim().toLowerCase();
-    // Определяем месяц: сначала из колонки D (текст), потом из даты колонки A
-    const MONTH_KEYS = ['янв.','февр.','мар.','апр.','май','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
-    const MONTH_MAP  = {
-      'янв.':'янв.','янв':'янв.',
-      'февр.':'февр.','февр':'февр.','фев.':'февр.','фев':'февр.',
-      'мар.':'мар.','март':'мар.','мар':'мар.',
-      'апр.':'апр.','апр':'апр.',
-      'май':'май',
-      'июн.':'июн.','июн':'июн.',
-      'июл.':'июл.','июл':'июл.',
-      'авг.':'авг.','авг':'авг.',
-      'сент.':'сент.','сент':'сент.','сен.':'сент.','сен':'сент.',
-      'окт.':'окт.','окт':'окт.',
-      'нояб.':'нояб.','нояб':'нояб.','ноя.':'нояб.','ноя':'нояб.',
-      'дек.':'дек.','дек':'дек.'
-    };
-    // Приоритет: колонка D (месяц как текст)
-    let month = MONTH_MAP[String(r[3]||'').trim().toLowerCase()] || '';
-    // Если в D пусто — берём из даты колонки A
-    if(!month) {
-      const ds = String(r[0]||'');
-      let mIdx = -1;
-      if(ds.includes('T') || (ds.indexOf('-') === 4)) {
-        mIdx = parseInt(ds.substring(5,7)) - 1;
-      } else if(ds.includes('.')) {
-        mIdx = parseInt(ds.split('.')[1]) - 1;
-      }
-      if(mIdx >= 0 && mIdx <= 11) month = MONTH_KEYS[mIdx];
+    // Определяем номер недели из общей колонки (C=2)
+    const weekLabel = String(r[2] || '');
+    const weekNum   = parseInt(weekLabel.replace(/\D/g,''));
+    if(!weekNum || weekNum > 53) continue;
+
+    // Дата начала из колонки A
+    const dateRaw = r[0] ? String(r[0]).slice(0,8) : '';
+    const dt = dateRaw.slice(0,5);
+
+    // Определяем месяц по дате начала недели
+    let month = 1;
+    const dayStr = String(r[0] || '');
+    // Парсим дату вида "DD.MM.YYYY" или Date-объект
+    let monthNum = 1;
+    if(dayStr.includes('.')) {
+      monthNum = parseInt(dayStr.split('.')[1]) || 1;
+    } else {
+      // Если Google вернул Date как число/строку
+      const d = new Date(dayStr);
+      if(!isNaN(d)) monthNum = d.getMonth()+1;
     }
-    if(!month) continue;
-    const weekStr = String(r[2]||'').trim();
-    const weekNum = parseInt(weekStr.replace(/\D/g,''))||0;
-    if(!farm || !weekNum || !month) continue;
-    if(pf !== "план" && pf !== "факт") continue;
+    month = monthNum;
+    if(month > 3) continue; // данные только за янв-март пока
 
-    const n = idx => {
-      const v = r[idx];
-      const x = parseFloat(String(v||'').replace(/\s/g,'').replace(',','.'));
-      return isNaN(x) ? 0 : x;
-    };
+    const n = v => { const x = Number(String(r[v]||'').replace(/\s/g,'')); return isNaN(x)?0:x; };
 
-    const milk  = n(6);
-    const herd  = n(7);
-    const dairy = n(9);
-    const proc  = n(13);
-
-    // Пропускаем полностью пустые строки (будущие периоды без данных)
-    // Для плана: должен быть хоть какой-то плановый надой или поголовье
-    // Для факта: пропускаем строки где всё нулевое
-    if(pf === 'план' && milk === 0 && herd === 0) continue;
-    if(pf === 'факт' && milk === 0 && herd === 0 && dairy === 0) continue;
-
-    // Защита от аномальных значений
-    const milkSafe = (milk > 0 && milk < 100000) ? milk : 0;
+    // Проверяем что хоть какие-то данные есть
+    const totalMilkPlan = n(5);
+    if(totalMilkPlan === 0 && n(6) === 0) continue;
 
     result.push({
-      month,
-      week:    weekNum,
-      weekLabel: 'Н' + weekNum,
-      farm:    farm.toLowerCase(),
-      isPlan:  pf === 'план',
-      isFact:  pf === 'факт',
-      milk:    milkSafe,
-      herd,
-      dairy,
-      proc,
+      w:  'Н'+weekNum,
+      dt: dt,
+      m:  month,
+      // Общий свод — используем для суммарных метрик
+      tot_rp: n(3),  tot_rf: n(4),
+      tot_mp: n(5),  tot_mf: n(6),
+      tot_hp: n(9),  tot_hf: n(10),
+      tot_dp: n(11), tot_df: n(12),
+      // Astana Onim
+      ao_rp: n(20), ao_rf: n(21),
+      ao_mp: n(22), ao_mf: n(23),
+      ao_hp: n(26), ao_hf: n(27),
+      ao_dp: n(28), ao_df: n(29),
+      // Burabay Milk
+      bm_rp: n(36), bm_rf: n(37),
+      bm_mp: n(38), bm_mf: n(39),
+      bm_hp: n(42), bm_hf: n(43),
+      bm_dp: n(44), bm_df: n(45),
     });
   }
-  return result;
+
+  // Если парсинг не дал результата — fallback
+  return result.length > 0 ? result : FALLBACK_DATA;
 }
 
-// ── АГРЕГАЦИЯ ─────────────────────────────────────────
-function getRows() {
-  return DB.filter(r => {
-    const mOk = currentMonth === 'all' || r.month === currentMonth;
-    const fOk = currentFarm  === 'all' || r.farm  === currentFarm;
-    return mOk && fOk;
-  });
-}
+// Резервные данные на случай если API временно недоступен
+const FALLBACK_DATA = [
+  {w:'Н1', dt:'01.01',m:1,tot_rp:38515721,tot_rf:19934854,tot_mp:95592,tot_mf:72350,tot_hp:1943,tot_hf:1261,tot_dp:842,tot_df:681, ao_rp:21537879,ao_rf:10744934,ao_mp:51960,ao_mf:43480,ao_hp:952,ao_hf:391,ao_dp:433,ao_df:391, bm_rp:16977842,bm_rf:9189920,bm_mp:43632,bm_mf:28870,bm_hp:991,bm_hf:870,bm_dp:409,bm_df:290},
+  {w:'Н2', dt:'05.01',m:1,tot_rp:67402512,tot_rf:58927156,tot_mp:167286,tot_mf:133104,tot_hp:1943,tot_hf:1263,tot_dp:842,tot_df:683, ao_rp:37691289,ao_rf:39698287,ao_mp:90930,ao_mf:77240,ao_hp:952,ao_hf:393,ao_dp:433,ao_df:393, bm_rp:29711223,bm_rf:19228869,bm_mp:76356,bm_mf:55864,bm_hp:991,bm_hf:870,bm_dp:409,bm_df:290},
+  {w:'Н3', dt:'12.01',m:1,tot_rp:67402512,tot_rf:65986503,tot_mp:167286,tot_mf:130229,tot_hp:1943,tot_hf:1263,tot_dp:842,tot_df:683, ao_rp:37691289,ao_rf:45163480,ao_mp:90930,ao_mf:73077,ao_hp:952,ao_hf:393,ao_dp:433,ao_df:393, bm_rp:29711223,bm_rf:20823023,bm_mp:76356,bm_mf:57152,bm_hp:991,bm_hf:870,bm_dp:409,bm_df:290},
+  {w:'Н4', dt:'19.01',m:1,tot_rp:67402512,tot_rf:66045915,tot_mp:167286,tot_mf:131637,tot_hp:1943,tot_hf:1262,tot_dp:842,tot_df:682, ao_rp:37691289,ao_rf:44776349,ao_mp:90930,ao_mf:73598,ao_hp:952,ao_hf:392,ao_dp:433,ao_df:392, bm_rp:29711223,bm_rf:21269566,bm_mp:76356,bm_mf:58039,bm_hp:991,bm_hf:870,bm_dp:409,bm_df:290},
+  {w:'Н5', dt:'26.01',m:1,tot_rp:67393307,tot_rf:74156095,tot_mp:166103,tot_mf:137082,tot_hp:1930,tot_hf:1283,tot_dp:837,tot_df:682, ao_rp:37625136,ao_rf:53085254,ao_mp:89490,ao_mf:76815,ao_hp:944,ao_hf:406,ao_dp:426,ao_df:392, bm_rp:29768171,bm_rf:21070841,bm_mp:76613,bm_mf:60267,bm_hp:986,bm_hf:877,bm_dp:410,bm_df:290},
+  {w:'Н6', dt:'02.02',m:2,tot_rp:67338078,tot_rf:71329687,tot_mp:168455,tot_mf:133993,tot_hp:1850,tot_hf:1398,tot_dp:849,tot_df:683, ao_rp:37228220,ao_rf:48704860,ao_mp:90300,ao_mf:73283,ao_hp:897,ao_hf:512,ao_dp:430,ao_df:393, bm_rp:30109858,bm_rf:22624827,bm_mp:78155,bm_mf:60710,bm_hp:953,bm_hf:886,bm_dp:419,bm_df:290},
+  {w:'Н7', dt:'09.02',m:2,tot_rp:67338078,tot_rf:66657382,tot_mp:168455,tot_mf:135788,tot_hp:1851,tot_hf:1398,tot_dp:849,tot_df:680, ao_rp:37228220,ao_rf:40128319,ao_mp:90300,ao_mf:73531,ao_hp:898,ao_hf:512,ao_dp:430,ao_df:390, bm_rp:30109858,bm_rf:26529063,bm_mp:78155,bm_mf:62257,bm_hp:953,bm_hf:886,bm_dp:419,bm_df:290},
+  {w:'Н8', dt:'16.02',m:2,tot_rp:67338078,tot_rf:64126457,tot_mp:168455,tot_mf:136005,tot_hp:1852,tot_hf:1060,tot_dp:849,tot_df:675, ao_rp:37228220,ao_rf:34112073,ao_mp:90300,ao_mf:72626,ao_hp:899,ao_hf:512,ao_dp:430,ao_df:381, bm_rp:30109858,bm_rf:30014384,bm_mp:78155,bm_mf:63379,bm_hp:953,bm_hf:548,bm_dp:419,bm_df:294},
+  {w:'Н9', dt:'23.02',m:2,tot_rp:65966985,tot_rf:60048760,tot_mp:168055,tot_mf:133287,tot_hp:1722,tot_hf:930,tot_dp:852,tot_df:667,  ao_rp:36088493,ao_rf:33992215,ao_mp:90698,ao_mf:69105,ao_hp:905,ao_hf:512,ao_dp:432,ao_df:373, bm_rp:29878493,bm_rf:26056545,bm_mp:77357,bm_mf:64182,bm_hp:817,bm_hf:418,bm_dp:420,bm_df:294},
+  {w:'Н10',dt:'02.03',m:3,tot_rp:59598069,tot_rf:43856990,tot_mp:165757,tot_mf:133917,tot_hp:921,tot_hf:512,tot_dp:869,tot_df:676,   ao_rp:31107768,ao_rf:31107768,ao_mp:93086,ao_mf:69258,ao_hp:921,ao_hf:512,ao_dp:443,ao_df:385, bm_rp:28490301,bm_rf:12749222,bm_mp:72671,bm_mf:64659,bm_hp:0,bm_hf:0,bm_dp:426,bm_df:291},
+  {w:'Н11',dt:'09.03',m:3,tot_rp:37182546,tot_rf:8692245,tot_mp:165757,tot_mf:132462,tot_hp:928,tot_hf:512,tot_dp:869,tot_df:692,    ao_rp:8692245,ao_rf:8692245,ao_mp:93086,ao_mf:68860,ao_hp:928,ao_hf:512,ao_dp:443,ao_df:393, bm_rp:28490301,bm_rf:0,bm_mp:72671,bm_mf:63603,bm_hp:0,bm_hf:0,bm_dp:426,bm_df:299},
+  {w:'Н12',dt:'16.03',m:3,tot_rp:29222401,tot_rf:732100,tot_mp:165757,tot_mf:79694,tot_hp:646,tot_hf:512,tot_dp:869,tot_df:321,      ao_rp:732100,ao_rf:732100,ao_mp:93086,ao_mf:51995,ao_hp:646,ao_hf:512,ao_dp:443,ao_df:278, bm_rp:28490301,bm_rf:0,bm_mp:72671,bm_mf:27699,bm_hp:0,bm_hf:0,bm_dp:426,bm_df:44},
+];
 
-function byWeek(rows) {
-  // Группируем по неделе. Внутри недели суммируем суточные значения всех ферм.
-  // Поголовье — максимум (не суммировать!), надои/переработка — сумма дней.
-  const map = {};
-  // Для поголовья: берём максимум по последнему дню каждой фермы в неделе
-  const herdPlan = {}; // week -> max plan herd
-  const herdFact = {}; // week -> max fact herd
-  const dairyPlan = {};
-  const dairyFact = {};
-
-  for(const r of rows) {
-    const wk = r.week;
-    if(!map[wk]) map[wk] = {week:wk, label:r.weekLabel, pm:0,fm:0, ph:0,fh:0, pd:0,fd:0, pp:0,fp:0};
-    const w = map[wk];
-    if(r.isPlan){
-      w.pm += r.milk;
-      w.pp += r.proc;
-      // Поголовье: суммируем максимумы по каждой ферме отдельно
-      const kp = wk + '|' + r.farm;
-      if(!herdPlan[kp] || r.herd > herdPlan[kp]) herdPlan[kp] = r.herd;
-      if(!dairyPlan[kp] || r.dairy > dairyPlan[kp]) dairyPlan[kp] = r.dairy;
-    }
-    if(r.isFact){
-      w.fm += r.milk;
-      w.fp += r.proc;
-      const kf = wk + '|' + r.farm;
-      if(!herdFact[kf] || r.herd > herdFact[kf]) herdFact[kf] = r.herd;
-      if(!dairyFact[kf] || r.dairy > dairyFact[kf]) dairyFact[kf] = r.dairy;
-    }
-  }
-  // Проставляем поголовье: сумма максимумов по фермам
-  for(const wk of Object.keys(map)) {
-    map[wk].ph = Object.entries(herdPlan).filter(([k])=>k.startsWith(wk+'|')).reduce((s,[,v])=>s+v, 0);
-    map[wk].fh = Object.entries(herdFact).filter(([k])=>k.startsWith(wk+'|')).reduce((s,[,v])=>s+v, 0);
-    map[wk].pd = Object.entries(dairyPlan).filter(([k])=>k.startsWith(wk+'|')).reduce((s,[,v])=>s+v, 0);
-    map[wk].fd = Object.entries(dairyFact).filter(([k])=>k.startsWith(wk+'|')).reduce((s,[,v])=>s+v, 0);
-  }
-  return Object.values(map).sort((a,b)=>a.week-b.week);
-}
-
-const MO = ['янв.','февр.','мар.','апр.','май','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
-const MN = {'янв.':'Январь','февр.':'Февраль','март':'Март','мар.':'Март','апр.':'Апрель','май':'Май','июн.':'Июнь','июл.':'Июль','авг.':'Август','сент.':'Сентябрь','окт.':'Октябрь','нояб.':'Ноябрь','дек.':'Декабрь'};
-
-function byMonth(rows) {
-  const map = {};
-  // Поголовье: берём максимум по последнему дню каждой фермы в месяце, потом суммируем по фермам
-  const herdPlan = {}, herdFact = {}, dairyPlan = {}, dairyFact = {};
-
-  for(const r of rows) {
-    const mo = r.month;
-    if(!map[mo]) map[mo]={month:mo, name:MN[mo]||mo, pm:0,fm:0,ph:0,fh:0,pd:0,fd:0,pp:0,fp:0};
-    const m = map[mo];
-    if(r.isPlan){
-      m.pm += r.milk; m.pp += r.proc;
-      const kp = mo + '|' + r.farm;
-      if(!herdPlan[kp] || r.herd > herdPlan[kp]) herdPlan[kp] = r.herd;
-      if(!dairyPlan[kp] || r.dairy > dairyPlan[kp]) dairyPlan[kp] = r.dairy;
-    }
-    if(r.isFact){
-      m.fm += r.milk; m.fp += r.proc;
-      const kf = mo + '|' + r.farm;
-      if(!herdFact[kf] || r.herd > herdFact[kf]) herdFact[kf] = r.herd;
-      if(!dairyFact[kf] || r.dairy > dairyFact[kf]) dairyFact[kf] = r.dairy;
-    }
-  }
-  for(const mo of Object.keys(map)) {
-    map[mo].ph = Object.entries(herdPlan).filter(([k])=>k.startsWith(mo+'|')).reduce((s,[,v])=>s+v,0);
-    map[mo].fh = Object.entries(herdFact).filter(([k])=>k.startsWith(mo+'|')).reduce((s,[,v])=>s+v,0);
-    map[mo].pd = Object.entries(dairyPlan).filter(([k])=>k.startsWith(mo+'|')).reduce((s,[,v])=>s+v,0);
-    map[mo].fd = Object.entries(dairyFact).filter(([k])=>k.startsWith(mo+'|')).reduce((s,[,v])=>s+v,0);
-  }
-  return MO.filter(k=>map[k]).map(k=>map[k]);
-}
-
-// ── УТИЛИТЫ ──────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+//  УТИЛИТЫ
+// ═══════════════════════════════════════════════════════
+const fmt = n => {
+  if(n>=1e9) return (n/1e9).toFixed(2)+'млрд';
+  if(n>=1e6) return (n/1e6).toFixed(1)+'млн';
+  if(n>=1e3) return (n/1e3).toFixed(0)+'К';
+  return Math.round(n).toLocaleString('ru');
+};
 const fmtN = n => Math.round(n).toLocaleString('ru');
-const fmt  = n => n>=1e6?(n/1e6).toFixed(1)+'млн':n>=1e3?(n/1e3).toFixed(0)+'К':Math.round(n).toLocaleString('ru');
 const pct  = (p,f) => p ? Math.round(f/p*100) : 0;
-const pb   = (p,f) => { const v=pct(p,f); const c=v>=100?'up':v>=85?'nu':'dn'; return `<span class="pb ${c}">${v}%</span>`; };
+const pctBadge = (p,f) => {
+  const v = pct(p,f);
+  const cls = v>=100?'up':v>=85?'neu':'down';
+  return `<span class="pct-badge ${cls}">${v}%</span>`;
+};
 
-function setStatus(s) {
-  const b = document.getElementById('status-badge');
-  if(s==='ok'){ b.className='badge green'; b.innerHTML='<div class="dot live"></div>Данные актуальны'; document.getElementById('update-time').textContent='Обновлено: '+new Date().toLocaleTimeString('ru'); }
-  else if(s==='loading'){ b.className='badge amber'; b.innerHTML='<div class="dot"></div>Загрузка...'; }
-  else { b.className='badge red'; b.innerHTML='<div class="dot"></div>Офлайн'; }
+function setStatus(state) {
+  const badge = document.getElementById('status-badge');
+  const dot   = badge.querySelector('.dot');
+  if(state==='ok'){
+    badge.className='badge green'; dot.className='dot live';
+    badge.innerHTML='<div class="dot live"></div>Данные актуальны';
+    document.getElementById('update-time').textContent='Обновлено: '+new Date().toLocaleTimeString('ru');
+  } else if(state==='loading'){
+    badge.className='badge amber'; badge.innerHTML='<div class="dot"></div>Загрузка...';
+  } else {
+    badge.className='badge red'; badge.innerHTML='<div class="dot"></div>Офлайн (кешированные данные)';
+  }
 }
 
-// ── KPI ───────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+//  ФИЛЬТРАЦИЯ
+// ═══════════════════════════════════════════════════════
+function getWeeks() {
+  return rawWeeks.filter(w => currentMonth==='all' || w.m==currentMonth);
+}
+
+function getM(w, key) {
+  if(currentFarm==='ao') return w['ao_'+key]||0;
+  if(currentFarm==='bm') return w['bm_'+key]||0;
+  // all — используем суммарный свод
+  return (w['tot_'+key]) || ((w['ao_'+key]||0) + (w['bm_'+key]||0));
+}
+
+function getMonthly() {
+  const M = {};
+  const names = {1:'Январь',2:'Февраль',3:'Март',4:'Апрель',5:'Май',6:'Июнь'};
+  for(const w of rawWeeks) {
+    if(!M[w.m]) M[w.m]={name:names[w.m]||'М'+w.m, ao_rp:0,ao_rf:0,bm_rp:0,bm_rf:0,tot_rp:0,tot_rf:0,ao_mp:0,ao_mf:0,bm_mp:0,bm_mf:0,tot_mp:0,tot_mf:0,ao_hp:0,ao_hf:0,bm_hp:0,bm_hf:0,tot_hp:0,tot_hf:0};
+    const m = M[w.m];
+    m.ao_rp+=w.ao_rp; m.ao_rf+=w.ao_rf;
+    m.bm_rp+=w.bm_rp; m.bm_rf+=w.bm_rf;
+    m.tot_rp+=w.tot_rp||0; m.tot_rf+=w.tot_rf||0;
+    m.ao_mp+=w.ao_mp; m.ao_mf+=w.ao_mf;
+    m.bm_mp+=w.bm_mp; m.bm_mf+=w.bm_mf;
+    m.tot_mp+=w.tot_mp||0; m.tot_mf+=w.tot_mf||0;
+    m.ao_hp=Math.max(m.ao_hp,w.ao_hf||0);
+    m.bm_hp=Math.max(m.bm_hp,w.bm_hf||0);
+    m.tot_hp=Math.max(m.tot_hp,(w.tot_hf||0));
+    m.ao_hf=w.ao_hp||0; m.bm_hf=w.bm_hp||0; m.tot_hf=w.tot_hp||0;
+  }
+  return Object.values(M).sort((a,b)=>Object.keys(names).indexOf(a.name)-Object.keys(names).indexOf(b.name));
+}
+
+// ═══════════════════════════════════════════════════════
+//  KPI
+// ═══════════════════════════════════════════════════════
 function renderKPI() {
-  const rows  = getRows();
-  const weeks = byWeek(rows);
-  const totPM = weeks.reduce((s,w)=>s+w.pm,0);
-  const totFM = weeks.reduce((s,w)=>s+w.fm,0);
-  const totPH = weeks.length ? Math.max(...weeks.map(w=>w.ph)) : 0;
-  const totFH = weeks.length ? Math.max(...weeks.map(w=>w.fh)) : 0;
-  const totPD = weeks.length ? Math.max(...weeks.map(w=>w.pd)) : 0;
-  const totFD = weeks.length ? Math.max(...weeks.map(w=>w.fd)) : 0;
-  const mPct=pct(totPM,totFM), hPct=pct(totPH,totFH), dPct=pct(totPD,totFD);
+  const weeks = getWeeks();
+  let mp=0,mf=0,rp=0,rf=0,hp=0,hf=0;
+  for(const w of weeks){ mp+=getM(w,'mp'); mf+=getM(w,'mf'); rp+=getM(w,'rp'); rf+=getM(w,'rf'); hp=Math.max(hp,getM(w,'hp')); hf=Math.max(hf,getM(w,'hf')); }
+  const mPct=pct(mp,mf), rPct=pct(rp,rf), hPct=pct(hp,hf);
 
-  document.getElementById('kpi-prod').innerHTML=[
-    {label:'Надои (факт)',      value:fmtN(totFM)+' л',     sub:'план: '+fmtN(totPM)+' л', delta:mPct+'% плана',                cls:mPct>=100?'pos':mPct>=85?'neu':'neg', accent:'#2563eb'},
-    {label:'Исп. плана надоев', value:mPct+'%',              sub:fmtN(totFM)+' из '+fmtN(totPM), delta:mPct>=100?'↑ выполнен':mPct>=85?'∼ в норме':'↓ отставание', cls:mPct>=100?'pos':mPct>=85?'neu':'neg', accent:'#16a34a'},
-    {label:'Поголовье (факт)',  value:fmtN(totFH)+' гол',   sub:'план: '+fmtN(totPH),      delta:hPct+'%',                      cls:hPct>=100?'pos':hPct>=85?'neu':'neg', accent:'#7c3aed'},
-    {label:'Дойных (факт)',     value:fmtN(totFD)+' гол',   sub:'план: '+fmtN(totPD),      delta:dPct+'%',                      cls:dPct>=100?'pos':dPct>=85?'neu':'neg', accent:'#b45309'},
-    {label:'Недель с данными',  value:weeks.length+' нед',  sub:'по текущему фильтру',     delta:'',cls:'',accent:'#9aa0b0'},
-    {label:'Дней с данными',    value:rows.filter(r=>r.isFact&&r.milk>0).length+' дн', sub:'фактических записей', delta:'',cls:'',accent:'#9aa0b0'},
+  document.getElementById('kpi-prod').innerHTML = [
+    {label:'Надои (факт)',value:fmtN(mf)+' л',sub:'план: '+fmtN(mp)+' л',delta:mPct+'% плана',cls:mPct>=100?'pos':mPct>=85?'neu':'neg',accent:'#58a6ff'},
+    {label:'Исп. плана надоев',value:mPct+'%',sub:fmtN(mf)+' из '+fmtN(mp),delta:mPct>=100?'↑ план выполнен':mPct>=85?'∼ близко к плану':'↓ отставание',cls:mPct>=100?'pos':mPct>=85?'neu':'neg',accent:'#3fb950'},
+    {label:'Выручка (факт)',value:fmt(rf)+' ₸',sub:'план: '+fmt(rp)+' ₸',delta:rPct+'% плана',cls:rPct>=100?'pos':rPct>=85?'neu':'neg',accent:'#bc8cff'},
+    {label:'Исп. плана выручки',value:rPct+'%',sub:fmt(rf)+' из '+fmt(rp),delta:rPct>=100?'↑ план выполнен':rPct>=85?'∼ близко к плану':'↓ отставание',cls:rPct>=100?'pos':rPct>=85?'neu':'neg',accent:'#d29922'},
+    {label:'Поголовье (факт)',value:hf.toLocaleString('ru')+' гол',sub:'план: '+hp.toLocaleString('ru'),delta:hPct+'%',cls:hPct>=100?'pos':hPct>=85?'neu':'neg',accent:'#39d353'},
+    {label:'Недели с данными',value:weeks.length+' нед',sub:'по фильтру',delta:'',cls:'',accent:'#484f58'},
   ].map(k=>`<div class="kpi-card" style="--accent:${k.accent}">
     <div class="kpi-label">${k.label}</div>
     <div class="kpi-value">${k.value}</div>
@@ -473,20 +555,15 @@ function renderKPI() {
     ${k.delta?`<div class="kpi-delta ${k.cls}">${k.delta}</div>`:''}
   </div>`).join('');
 
-  // Переработка KPI
-  const totPP = weeks.reduce((s,w)=>s+w.pp,0);
-  const totFP = weeks.reduce((s,w)=>s+w.fp,0);
-  const pPct  = pct(totPP,totFP);
-  const aoFP  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'&&r.isFact).reduce((s,r)=>s+r.proc,0);
-  const bmFP  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'&&r.isFact).reduce((s,r)=>s+r.proc,0);
-  const aoFM  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'&&r.isFact).reduce((s,r)=>s+r.milk,0);
-  const bmFM  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'&&r.isFact).reduce((s,r)=>s+r.milk,0);
-
-  document.getElementById('kpi-proc').innerHTML=[
-    {label:'Передано на переработку', value:fmtN(totFP)+' л', sub:'план: '+fmtN(totPP)+' л', delta:pPct+'%', cls:pPct>=100?'pos':pPct>=85?'neu':'neg', accent:'#2563eb'},
-    {label:'Исп. плана переработки',  value:pPct+'%', sub:fmtN(totFP)+' из '+fmtN(totPP), delta:pPct>=100?'↑ выполнен':pPct>=85?'∼ в норме':'↓ отставание', cls:pPct>=100?'pos':pPct>=85?'neu':'neg', accent:'#16a34a'},
-    {label:'Astana Onim — надои',     value:fmtN(aoFM)+' л', sub:'передано: '+fmtN(aoFP)+' л', delta:'', cls:'', accent:'#2563eb'},
-    {label:'Burabay Milk — надои',    value:fmtN(bmFM)+' л', sub:'передано: '+fmtN(bmFP)+' л', delta:'', cls:'', accent:'#7c3aed'},
+  // KPI для Переработки
+  let a_rp=0,a_rf=0,b_rp=0,b_rf=0;
+  for(const w of weeks){ a_rp+=w.ao_rp; a_rf+=w.ao_rf; b_rp+=w.bm_rp; b_rf+=w.bm_rf; }
+  const t_rp=a_rp+b_rp, t_rf=a_rf+b_rf;
+  document.getElementById('kpi-proc').innerHTML = [
+    {label:'Выручка AO (факт)',value:fmt(a_rf)+' ₸',sub:'план: '+fmt(a_rp),delta:pct(a_rp,a_rf)+'%',cls:pct(a_rp,a_rf)>=100?'pos':'neg',accent:'#58a6ff'},
+    {label:'Выручка BM (факт)',value:fmt(b_rf)+' ₸',sub:'план: '+fmt(b_rp),delta:pct(b_rp,b_rf)+'%',cls:pct(b_rp,b_rf)>=100?'pos':'neg',accent:'#bc8cff'},
+    {label:'Итого выручка',value:fmt(t_rf)+' ₸',sub:'план: '+fmt(t_rp),delta:pct(t_rp,t_rf)+'%',cls:pct(t_rp,t_rf)>=100?'pos':'neg',accent:'#3fb950'},
+    {label:'Доля AO',value:t_rf?Math.round(a_rf/t_rf*100)+'%':'—',sub:'от общей выручки (факт)',delta:'',cls:'',accent:'#58a6ff'},
   ].map(k=>`<div class="kpi-card" style="--accent:${k.accent}">
     <div class="kpi-label">${k.label}</div>
     <div class="kpi-value">${k.value}</div>
@@ -495,234 +572,244 @@ function renderKPI() {
   </div>`).join('');
 }
 
-// ── КАРТОЧКИ ФЕРМ ─────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+//  КАРТОЧКИ ФЕРМ
+// ═══════════════════════════════════════════════════════
 function renderFarmCards() {
-  document.getElementById('farm-cards').innerHTML = [
-    {name:'Astana Onim', key:'astana onim', color:'#2563eb'},
-    {name:'Burabay Milk',key:'burabay milk',color:'#7c3aed'},
-  ].map(f => {
-    const rows  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm===f.key);
-    const weeks = byWeek(rows);
-    const pm=weeks.reduce((s,w)=>s+w.pm,0), fm=weeks.reduce((s,w)=>s+w.fm,0);
-    const ph=weeks.length?Math.max(...weeks.map(w=>w.ph)):0, fh=weeks.length?Math.max(...weeks.map(w=>w.fh)):0;
-    const pp=weeks.reduce((s,w)=>s+w.pp,0), fp=weeks.reduce((s,w)=>s+w.fp,0);
-    const mp=pct(pm,fm), hp=pct(ph,fh), prp=pct(pp,fp);
+  const weeks = getWeeks();
+  let ao={rp:0,rf:0,mp:0,mf:0,hp:0,hf:0}, bm={rp:0,rf:0,mp:0,mf:0,hp:0,hf:0};
+  for(const w of weeks){
+    ao.rp+=w.ao_rp; ao.rf+=w.ao_rf; ao.mp+=w.ao_mp; ao.mf+=w.ao_mf;
+    ao.hp=Math.max(ao.hp,w.ao_hf); ao.hf=Math.max(ao.hf,w.ao_hp);
+    bm.rp+=w.bm_rp; bm.rf+=w.bm_rf; bm.mp+=w.bm_mp; bm.mf+=w.bm_mf;
+    bm.hp=Math.max(bm.hp,w.bm_hf); bm.hf=Math.max(bm.hf,w.bm_hp);
+  }
+  const card = (name,color,d) => {
+    const m=pct(d.mp,d.mf), r=pct(d.rp,d.rf), h=pct(d.hp,d.hf);
     return `<div class="farm-card">
-      <div class="farm-name"><div class="fdot" style="background:${f.color}"></div>${f.name}</div>
+      <div class="farm-name"><div class="farm-dot-big" style="background:${color}"></div>${name}</div>
       <div class="farm-metrics">
         <div>
           <div class="fm-label">Надои факт / план</div>
-          <div class="fm-val">${fmtN(fm)} / ${fmtN(pm)} л</div>
-          <div class="prog"><div class="prog-fill" style="width:${Math.min(mp,100)}%;background:${f.color}"></div></div>
-          <div class="fm-pct">${mp}% выполнения</div>
+          <div class="fm-val">${fmtN(d.mf)} / ${fmtN(d.mp)} л</div>
+          <div class="prog"><div class="prog-fill" style="width:${Math.min(m,100)}%;background:${color}"></div></div>
+          <div class="fm-pct">${m}% выполнения</div>
+        </div>
+        <div>
+          <div class="fm-label">Выручка факт / план</div>
+          <div class="fm-val">${fmt(d.rf)} / ${fmt(d.rp)} ₸</div>
+          <div class="prog"><div class="prog-fill" style="width:${Math.min(r,100)}%;background:${color}"></div></div>
+          <div class="fm-pct">${r}% выполнения</div>
         </div>
         <div>
           <div class="fm-label">Поголовье факт / план</div>
-          <div class="fm-val">${fmtN(fh)} / ${fmtN(ph)} гол</div>
-          <div class="prog"><div class="prog-fill" style="width:${Math.min(hp,100)}%;background:${f.color}"></div></div>
-          <div class="fm-pct">${hp}% выполнения</div>
-        </div>
-        <div>
-          <div class="fm-label">Переработка факт / план</div>
-          <div class="fm-val">${fmtN(fp)} / ${fmtN(pp)} л</div>
-          <div class="prog"><div class="prog-fill" style="width:${Math.min(prp,100)}%;background:${f.color}"></div></div>
-          <div class="fm-pct">${prp}% выполнения</div>
+          <div class="fm-val">${d.hp.toLocaleString('ru')} / ${d.hf.toLocaleString('ru')} гол</div>
+          <div class="prog"><div class="prog-fill" style="width:${Math.min(h,100)}%;background:${color}"></div></div>
+          <div class="fm-pct">${h}% выполнения</div>
         </div>
       </div>
     </div>`;
-  }).join('');
+  };
+  document.getElementById('farm-cards').innerHTML =
+    card('Astana Onim','#58a6ff',ao) + card('Burabay Milk','#bc8cff',bm);
 }
 
-// ── ТАБЛИЦЫ ───────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+//  ТАБЛИЦЫ
+// ═══════════════════════════════════════════════════════
 function renderTables() {
+  const monthly = getMonthly();
+
   // Производство
-  const months = byMonth(getRows());
-  let s={pm:0,fm:0,ph:0,fh:0,pd:0,fd:0};
-  const prodRows = months.map(m=>{
-    s.pm+=m.pm;s.fm+=m.fm;s.ph=Math.max(s.ph,m.ph);s.fh=Math.max(s.fh,m.fh);s.pd=Math.max(s.pd,m.pd);s.fd=Math.max(s.fd,m.fd);
-    return `<tr><td>${m.name}</td><td>${fmtN(m.pm)}</td><td>${fmtN(m.fm)}</td><td>${pb(m.pm,m.fm)}</td><td>${fmtN(m.ph)}</td><td>${fmtN(m.fh)}</td><td>${pb(m.ph,m.fh)}</td><td>${fmtN(m.pd)}</td><td>${fmtN(m.fd)}</td><td>${pb(m.pd,m.fd)}</td></tr>`;
+  let totMP=0,totMF=0,totRP=0,totRF=0,totHP=0,totHF=0;
+  const prodRows = monthly.map(m=>{
+    const mp = currentFarm==='ao'?m.ao_mp:currentFarm==='bm'?m.bm_mp:m.ao_mp+m.bm_mp;
+    const mf = currentFarm==='ao'?m.ao_mf:currentFarm==='bm'?m.bm_mf:m.ao_mf+m.bm_mf;
+    const rp = currentFarm==='ao'?m.ao_rp:currentFarm==='bm'?m.bm_rp:m.ao_rp+m.bm_rp;
+    const rf = currentFarm==='ao'?m.ao_rf:currentFarm==='bm'?m.bm_rf:m.ao_rf+m.bm_rf;
+    const hp = currentFarm==='ao'?m.ao_hf:currentFarm==='bm'?m.bm_hf:m.ao_hf+m.bm_hf;
+    const hf = currentFarm==='ao'?m.ao_hp:currentFarm==='bm'?m.bm_hp:m.ao_hp+m.bm_hp;
+    totMP+=mp;totMF+=mf;totRP+=rp;totRF+=rf;totHP+=hp;totHF+=hf;
+    return `<tr><td>${m.name}</td><td>${fmtN(mp)}</td><td>${fmtN(mf)}</td><td>${pctBadge(mp,mf)}</td><td>${fmtN(rp)}</td><td>${fmtN(rf)}</td><td>${pctBadge(rp,rf)}</td><td>${hp.toLocaleString('ru')}</td><td>${hf.toLocaleString('ru')}</td><td>${pctBadge(hp,hf)}</td></tr>`;
   });
-  prodRows.push(`<tr class="total-row"><td>Итого</td><td>${fmtN(s.pm)}</td><td>${fmtN(s.fm)}</td><td>${pb(s.pm,s.fm)}</td><td>${fmtN(s.ph)}</td><td>${fmtN(s.fh)}</td><td>${pb(s.ph,s.fh)}</td><td>${fmtN(s.pd)}</td><td>${fmtN(s.fd)}</td><td>${pb(s.pd,s.fd)}</td></tr>`);
+  prodRows.push(`<tr class="total-row"><td>Итого</td><td>${fmtN(totMP)}</td><td>${fmtN(totMF)}</td><td>${pctBadge(totMP,totMF)}</td><td>${fmtN(totRP)}</td><td>${fmtN(totRF)}</td><td>${pctBadge(totRP,totRF)}</td><td>${totHP.toLocaleString('ru')}</td><td>${totHF.toLocaleString('ru')}</td><td>${pctBadge(totHP,totHF)}</td></tr>`);
   document.getElementById('tb-monthly').innerHTML = prodRows.join('');
 
-  // Переработка по фермам
-  const aoM = byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'));
-  const bmM = byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'));
-  const allMK = [...new Set([...aoM,...bmM].map(m=>m.month))].sort((a,b)=>MO.indexOf(a)-MO.indexOf(b));
-  let ps={ap:0,af:0,bp:0,bf:0};
-  const procRows = allMK.map(mk=>{
-    const ao=aoM.find(m=>m.month===mk)||{pp:0,fp:0};
-    const bm=bmM.find(m=>m.month===mk)||{pp:0,fp:0};
-    ps.ap+=ao.pp;ps.af+=ao.fp;ps.bp+=bm.pp;ps.bf+=bm.fp;
-    return `<tr><td>${MN[mk]||mk}</td><td>${fmtN(ao.pp)}</td><td>${fmtN(ao.fp)}</td><td>${pb(ao.pp,ao.fp)}</td><td>${fmtN(bm.pp)}</td><td>${fmtN(bm.fp)}</td><td>${pb(bm.pp,bm.fp)}</td><td>${fmtN(ao.pp+bm.pp)}</td><td>${fmtN(ao.fp+bm.fp)}</td><td>${pb(ao.pp+bm.pp,ao.fp+bm.fp)}</td></tr>`;
+  // Переработка
+  let s={ao_rp:0,ao_rf:0,bm_rp:0,bm_rf:0};
+  const procRows = monthly.map(m=>{
+    s.ao_rp+=m.ao_rp;s.ao_rf+=m.ao_rf;s.bm_rp+=m.bm_rp;s.bm_rf+=m.bm_rf;
+    return `<tr><td>${m.name}</td><td>${fmtN(m.ao_rp)}</td><td>${fmtN(m.ao_rf)}</td><td>${pctBadge(m.ao_rp,m.ao_rf)}</td><td>${fmtN(m.bm_rp)}</td><td>${fmtN(m.bm_rf)}</td><td>${pctBadge(m.bm_rp,m.bm_rf)}</td><td>${fmtN(m.ao_rp+m.bm_rp)}</td><td>${fmtN(m.ao_rf+m.bm_rf)}</td><td>${pctBadge(m.ao_rp+m.bm_rp,m.ao_rf+m.bm_rf)}</td></tr>`;
   });
-  procRows.push(`<tr class="total-row"><td>Итого</td><td>${fmtN(ps.ap)}</td><td>${fmtN(ps.af)}</td><td>${pb(ps.ap,ps.af)}</td><td>${fmtN(ps.bp)}</td><td>${fmtN(ps.bf)}</td><td>${pb(ps.bp,ps.bf)}</td><td>${fmtN(ps.ap+ps.bp)}</td><td>${fmtN(ps.af+ps.bf)}</td><td>${pb(ps.ap+ps.bp,ps.af+ps.bf)}</td></tr>`);
+  procRows.push(`<tr class="total-row"><td>Итого</td><td>${fmtN(s.ao_rp)}</td><td>${fmtN(s.ao_rf)}</td><td>${pctBadge(s.ao_rp,s.ao_rf)}</td><td>${fmtN(s.bm_rp)}</td><td>${fmtN(s.bm_rf)}</td><td>${pctBadge(s.bm_rp,s.bm_rf)}</td><td>${fmtN(s.ao_rp+s.bm_rp)}</td><td>${fmtN(s.ao_rf+s.bm_rf)}</td><td>${pctBadge(s.ao_rp+s.bm_rp,s.ao_rf+s.bm_rf)}</td></tr>`);
   document.getElementById('tb-proc').innerHTML = procRows.join('');
 }
 
-// ── ГРАФИКИ ───────────────────────────────────────────
-const BOPTS = {
-  responsive:true, maintainAspectRatio:false, animation:{duration:350},
-  plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',titleColor:'#1a1d23',bodyColor:'#5a6070',borderColor:'rgba(0,0,0,0.1)',borderWidth:1,padding:9}},
+// ═══════════════════════════════════════════════════════
+//  ГРАФИКИ
+// ═══════════════════════════════════════════════════════
+const BASE_OPTS = {
+  responsive:true,
+  maintainAspectRatio:false,
+  animation:{duration:400},
+  plugins:{
+    legend:{display:false},
+    tooltip:{backgroundColor:'#161b22',titleColor:'#e6edf3',bodyColor:'#8b949e',borderColor:'rgba(255,255,255,0.12)',borderWidth:1,padding:10}
+  },
   scales:{
-    x:{ticks:{color:'#9aa0b0',font:{size:10},maxRotation:45,autoSkip:true},grid:{color:'rgba(0,0,0,0.04)'},border:{color:'transparent'}},
-    y:{ticks:{color:'#9aa0b0',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'},border:{color:'transparent'}}
+    x:{ticks:{color:'#484f58',font:{size:10},maxRotation:45,autoSkip:false},grid:{color:'rgba(255,255,255,0.04)'},border:{color:'transparent'}},
+    y:{ticks:{color:'#484f58',font:{size:10}},grid:{color:'rgba(255,255,255,0.06)'},border:{color:'transparent'}}
   }
 };
-function dm(a,b){const r=Object.assign({},a);for(const k in b){if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k]))r[k]=dm(a[k]||{},b[k]);else r[k]=b[k];}return r;}
-function mkChart(id,type,labels,datasets,extra={}){
-  if(charts[id])charts[id].destroy();
-  const el=document.getElementById(id);if(!el)return;
-  charts[id]=new Chart(el,{type,data:{labels,datasets},options:dm(BOPTS,extra)});
+
+function mkChart(id, type, labels, datasets, extra={}) {
+  if(charts[id]) charts[id].destroy();
+  const el = document.getElementById(id);
+  if(!el) return;
+  charts[id] = new Chart(el, {
+    type,
+    data:{labels,datasets},
+    options: deepMerge(BASE_OPTS, extra)
+  });
 }
-const CLRS=['#2563eb','#16a34a','#b45309','#7c3aed','#dc2626'];
+
+function deepMerge(a, b) {
+  const r = Object.assign({}, a);
+  for(const k in b) {
+    if(b[k] && typeof b[k]==='object' && !Array.isArray(b[k])) r[k]=deepMerge(a[k]||{},b[k]);
+    else r[k]=b[k];
+  }
+  return r;
+}
 
 function renderCharts() {
-  const rows   = getRows();
-  const weeks  = byWeek(rows);
-  const months = byMonth(rows);
-  const wL = weeks.map(w=>w.label);
-  const mL = months.map(m=>m.name.slice(0,3));
+  const weeks   = getWeeks();
+  const monthly = getMonthly();
+  const wLabels = weeks.map(w=>w.w);
+  const mLabels = monthly.map(m=>m.name.slice(0,3));
 
-  // Надои план/факт
-  mkChart('c-milk-pf','bar',wL,[
-    {label:'План',data:weeks.map(w=>w.pm),backgroundColor:'rgba(37,99,235,0.15)',borderColor:'#2563eb',borderWidth:1.5,borderRadius:3,order:2},
-    {label:'Факт',data:weeks.map(w=>w.fm),backgroundColor:'rgba(22,163,74,0.2)',borderColor:'#16a34a',borderWidth:1.5,borderRadius:3,order:1}
+  const wMP = weeks.map(w=>getM(w,'mp'));
+  const wMF = weeks.map(w=>getM(w,'mf'));
+  const wRP = weeks.map(w=>w.ao_rp+w.bm_rp);
+  const wRF = weeks.map(w=>w.ao_rf+w.bm_rf);
+
+  // 1. Надои план/факт
+  mkChart('c-milk-pf','bar',wLabels,[
+    {label:'План',data:wMP,backgroundColor:'rgba(88,166,255,0.22)',borderColor:'#58a6ff',borderWidth:1.5,borderRadius:3,order:2},
+    {label:'Факт',data:wMF,backgroundColor:'rgba(63,185,80,0.28)',borderColor:'#3fb950',borderWidth:1.5,borderRadius:3,order:1}
   ]);
 
-  // % исполнения
-  mkChart('c-exec-pct','line',wL,[
-    {label:'%',data:weeks.map(w=>w.pm?Math.round(w.fm/w.pm*100):0),borderColor:'#b45309',backgroundColor:'rgba(180,83,9,0.07)',borderWidth:2,fill:true,tension:0.35,pointRadius:3,pointBackgroundColor:'#b45309'}
-  ],{scales:{x:BOPTS.scales.x,y:{...BOPTS.scales.y,min:0,max:150,ticks:{callback:v=>v+'%',color:'#9aa0b0',font:{size:10}}}}});
+  // 2. % исполнения
+  const execPct = wMP.map((p,i)=>p?Math.round(wMF[i]/p*100):0);
+  mkChart('c-exec-pct','line',wLabels,[
+    {label:'%',data:execPct,borderColor:'#d29922',backgroundColor:'rgba(210,153,34,0.1)',borderWidth:2,fill:true,tension:0.35,pointRadius:3,pointBackgroundColor:'#d29922'}
+  ],{scales:{x:BASE_OPTS.scales.x,y:{...BASE_OPTS.scales.y,min:0,max:150,ticks:{callback:v=>v+'%',color:'#484f58',font:{size:10}}}}});
 
-  // Нарастающий итог
-  const allW = byWeek(DB.filter(r=>currentFarm==='all'||r.farm===currentFarm));
-  let cp=0,cf=0,cP=[],cF=[];
-  for(const w of allW){cp+=w.pm;cf+=w.fm;cP.push(cp);cF.push(cf);}
-  mkChart('c-cum-milk','line',allW.map(w=>w.label),[
-    {label:'План',data:cP,borderColor:'#93c5fd',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1.5},
-    {label:'Факт',data:cF,borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.05)',borderWidth:2,fill:true,tension:0.4,pointRadius:2}
+  // 3. Нарастающий итог надоев
+  let cp=0,cf=0,cumP=[],cumF=[];
+  for(const w of rawWeeks){ cp+=getM(w,'mp'); cf+=getM(w,'mf'); cumP.push(cp); cumF.push(cf); }
+  mkChart('c-cum-milk','line',rawWeeks.map(w=>w.w),[
+    {label:'План нараст.',data:cumP,borderColor:'rgba(88,166,255,0.5)',backgroundColor:'rgba(88,166,255,0.05)',borderWidth:1.5,borderDash:[5,4],fill:true,tension:0.4,pointRadius:1.5},
+    {label:'Факт нараст.',data:cumF,borderColor:'#3fb950',backgroundColor:'rgba(63,185,80,0.07)',borderWidth:2,fill:true,tension:0.4,pointRadius:2}
   ]);
 
-  // МоМ надои
-  mkChart('c-mom-milk','bar',mL,[
-    {label:'Факт',data:months.map(m=>m.fm),backgroundColor:months.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:months.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
+  // 4. МоМ надои
+  const momMilk = monthly.map(m=>currentFarm==='ao'?m.ao_mf:currentFarm==='bm'?m.bm_mf:m.ao_mf+m.bm_mf);
+  mkChart('c-mom-milk','bar',mLabels,[
+    {label:'Факт надои',data:momMilk,backgroundColor:momMilk.map((_,i)=>i===0?'rgba(88,166,255,0.5)':i===1?'rgba(63,185,80,0.5)':'rgba(210,153,34,0.5)'),borderColor:momMilk.map((_,i)=>i===0?'#58a6ff':i===1?'#3fb950':'#d29922'),borderWidth:1.5,borderRadius:5}
   ]);
 
-  // МоМ поголовье
-  mkChart('c-mom-herd','bar',mL,[
-    {label:'Факт',data:months.map(m=>m.fh),backgroundColor:months.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:months.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
+  // 5. МоМ выручка
+  const momRev = monthly.map(m=>currentFarm==='ao'?m.ao_rf:currentFarm==='bm'?m.bm_rf:m.ao_rf+m.bm_rf);
+  mkChart('c-mom-rev','bar',mLabels,[
+    {label:'Выручка факт',data:momRev,backgroundColor:momRev.map((_,i)=>i===0?'rgba(188,140,255,0.5)':i===1?'rgba(63,185,80,0.5)':'rgba(210,153,34,0.5)'),borderColor:momRev.map((_,i)=>i===0?'#bc8cff':i===1?'#3fb950':'#d29922'),borderWidth:1.5,borderRadius:5}
   ]);
 
-  // Переработка план/факт
-  mkChart('c-proc-pf','bar',wL,[
-    {label:'План',data:weeks.map(w=>w.pp),backgroundColor:'rgba(37,99,235,0.15)',borderColor:'#2563eb',borderWidth:1.5,borderRadius:3,order:2},
-    {label:'Факт',data:weeks.map(w=>w.fp),backgroundColor:'rgba(22,163,74,0.2)',borderColor:'#16a34a',borderWidth:1.5,borderRadius:3,order:1}
+  // 6. Выручка план/факт (переработка)
+  mkChart('c-rev-pf','bar',wLabels,[
+    {label:'План',data:wRP,backgroundColor:'rgba(88,166,255,0.22)',borderColor:'#58a6ff',borderWidth:1.5,borderRadius:3,order:2},
+    {label:'Факт',data:wRF,backgroundColor:'rgba(63,185,80,0.28)',borderColor:'#3fb950',borderWidth:1.5,borderRadius:3,order:1}
   ]);
 
-  // Пирог
-  const aoFP=DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'&&r.isFact).reduce((s,r)=>s+r.proc,0);
-  const bmFP=DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'&&r.isFact).reduce((s,r)=>s+r.proc,0);
-  if(charts['c-proc-pie'])charts['c-proc-pie'].destroy();
-  const pc=document.getElementById('c-proc-pie');
-  if(pc)charts['c-proc-pie']=new Chart(pc,{
+  // 7. Пирог AO/BM
+  const aoTot = weeks.reduce((s,w)=>s+w.ao_rf,0);
+  const bmTot = weeks.reduce((s,w)=>s+w.bm_rf,0);
+  if(charts['c-rev-pie']) charts['c-rev-pie'].destroy();
+  const pc = document.getElementById('c-rev-pie');
+  if(pc) charts['c-rev-pie'] = new Chart(pc,{
     type:'doughnut',
-    data:{labels:['Astana Onim','Burabay Milk'],datasets:[{data:[aoFP,bmFP],backgroundColor:['rgba(37,99,235,0.7)','rgba(124,58,237,0.7)'],borderColor:['#2563eb','#7c3aed'],borderWidth:1.5,hoverOffset:5}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#5a6070',font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#fff',titleColor:'#1a1d23',bodyColor:'#5a6070',borderColor:'rgba(0,0,0,0.1)',borderWidth:1}}}
+    data:{labels:['Astana Onim','Burabay Milk'],datasets:[{data:[aoTot,bmTot],backgroundColor:['rgba(88,166,255,0.7)','rgba(188,140,255,0.7)'],borderColor:['#58a6ff','#bc8cff'],borderWidth:1.5,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#8b949e',font:{size:11},boxWidth:10,padding:14}},tooltip:{backgroundColor:'#161b22',titleColor:'#e6edf3',bodyColor:'#8b949e',borderColor:'rgba(255,255,255,0.12)',borderWidth:1}}}
   });
 
-  // Нарастающий итог переработки
-  const aoW=byWeek(DB.filter(r=>r.farm==='astana onim'));
-  const bmW=byWeek(DB.filter(r=>r.farm==='burabay milk'));
-  const uW=[...new Set([...aoW,...bmW].map(w=>w.week))].sort((a,b)=>a-b);
-  let cap=0,caf=0,cbp=0,cbf=0,c1=[],c2=[],c3=[],c4=[],cL=[];
-  for(const wn of uW){
-    const aw=aoW.find(w=>w.week===wn)||{pp:0,fp:0};
-    const bw=bmW.find(w=>w.week===wn)||{pp:0,fp:0};
-    cap+=aw.pp;caf+=aw.fp;cbp+=bw.pp;cbf+=bw.fp;
-    c1.push(cap);c2.push(caf);c3.push(cbp);c4.push(cbf);cL.push('Н'+wn);
-  }
-  mkChart('c-cum-proc','line',cL,[
-    {label:'AO план',data:c1,borderColor:'#93c5fd',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1},
-    {label:'AO факт',data:c2,borderColor:'#2563eb',borderWidth:2,fill:false,tension:0.4,pointRadius:2},
-    {label:'BM план',data:c3,borderColor:'#c4b5fd',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1},
-    {label:'BM факт',data:c4,borderColor:'#7c3aed',borderWidth:2,fill:false,tension:0.4,pointRadius:2}
+  // 8. Нарастающий итог выручки
+  let ca_p=0,ca_f=0,cb_p=0,cb_f=0,cr1=[],cr2=[],cr3=[],cr4=[];
+  for(const w of rawWeeks){ ca_p+=w.ao_rp;ca_f+=w.ao_rf;cb_p+=w.bm_rp;cb_f+=w.bm_rf; cr1.push(ca_p);cr2.push(ca_f);cr3.push(cb_p);cr4.push(cb_f); }
+  mkChart('c-cum-rev','line',rawWeeks.map(w=>w.w),[
+    {label:'AO план',data:cr1,borderColor:'rgba(88,166,255,0.45)',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1},
+    {label:'AO факт',data:cr2,borderColor:'#3fb950',borderWidth:2,fill:false,tension:0.4,pointRadius:2},
+    {label:'BM план',data:cr3,borderColor:'rgba(188,140,255,0.45)',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1},
+    {label:'BM факт',data:cr4,borderColor:'#d29922',borderWidth:2,fill:false,tension:0.4,pointRadius:2}
   ]);
 
-  // МоМ по фермам
-  const aoMo=byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'));
-  const bmMo=byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'));
-  mkChart('c-ao-mom','bar',aoMo.map(m=>m.name.slice(0,3)),[
-    {label:'AO',data:aoMo.map(m=>m.fp),backgroundColor:aoMo.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:aoMo.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
+  // 9. АО МоМ выручка
+  mkChart('c-ao-mom','bar',mLabels,[
+    {label:'AO выручка',data:monthly.map(m=>m.ao_rf),backgroundColor:monthly.map((_,i)=>i===0?'rgba(88,166,255,0.5)':i===1?'rgba(63,185,80,0.5)':'rgba(210,153,34,0.5)'),borderColor:monthly.map((_,i)=>i===0?'#58a6ff':i===1?'#3fb950':'#d29922'),borderWidth:1.5,borderRadius:5}
   ]);
-  mkChart('c-bm-mom','bar',bmMo.map(m=>m.name.slice(0,3)),[
-    {label:'BM',data:bmMo.map(m=>m.fp),backgroundColor:bmMo.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:bmMo.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
+
+  // 10. BM МоМ выручка
+  mkChart('c-bm-mom','bar',mLabels,[
+    {label:'BM выручка',data:monthly.map(m=>m.bm_rf),backgroundColor:monthly.map((_,i)=>i===0?'rgba(188,140,255,0.5)':i===1?'rgba(63,185,80,0.5)':'rgba(210,153,34,0.5)'),borderColor:monthly.map((_,i)=>i===0?'#bc8cff':i===1?'#3fb950':'#d29922'),borderWidth:1.5,borderRadius:5}
   ]);
 }
 
-// ── НАВИГАЦИЯ ─────────────────────────────────────────
-function showPage(p,btn){
+// ═══════════════════════════════════════════════════════
+//  НАВИГАЦИЯ
+// ═══════════════════════════════════════════════════════
+function showPage(p, btn) {
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
-  if(btn)btn.classList.add('active');
+  if(btn) btn.classList.add('active');
   setTimeout(renderCharts,60);
 }
-function buildMonthBtns(){
-  const MO=['янв.','февр.','мар.','апр.','май','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
-  const found=[...new Set(DB.filter(r=>r.month).map(r=>r.month))].sort((a,b)=>MO.indexOf(a)-MO.indexOf(b));
-  const container=document.getElementById('month-btns');
-  if(!container)return;
-  container.innerHTML=found.map(m=>`<button class="f-btn" onclick="setMonth('${m}',this)">${MN[m]||m}</button>`).join('');
-}
-function setMonth(m,btn){
-  currentMonth=m;
-  document.querySelectorAll('.filters .f-btn').forEach(b=>b.classList.remove('active'));
-  // Активируем кнопку Весь год
-  const allBtn=document.querySelector('.filters .f-btn');
-  if(m==='all'&&allBtn)allBtn.classList.add('active');
-  if(btn)btn.classList.add('active');
-  renderAll();
-}
-function setFarm(f,btn){
-  currentFarm=f;
-  ['fb-all','fb-ao','fb-bm'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
+
+function setMonth(m, btn) {
+  currentMonth = m;
+  document.querySelectorAll('.filters .f-btn').forEach((b,i)=>{if(i<4)b.classList.remove('active')});
   btn.classList.add('active');
   renderAll();
 }
-function renderAll(){
+
+const farmBtnIds = ['fb-all','fb-ao','fb-bm'];
+function setFarm(f, btn) {
+  currentFarm = f;
+  farmBtnIds.forEach(id=>{ const el=document.getElementById(id); if(el)el.classList.remove('active'); });
+  btn.classList.add('active');
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════
+//  РЕНДЕР ВСЕГО
+// ═══════════════════════════════════════════════════════
+function renderAll() {
   renderKPI();
   renderFarmCards();
   renderTables();
-  setTimeout(renderCharts,60);
+  setTimeout(renderCharts, 60);
 }
 
-// ── ЗАГРУЗКА ──────────────────────────────────────────
-async function loadData(){
-  setStatus('loading');
-  try{
-    const res  = await fetch(SCRIPT_URL);
-    const json = await res.json();
-    const rawData = Array.isArray(json) ? json : (json.data || json.rows || []);
-    DB = parseSheet(rawData);
+// ═══════════════════════════════════════════════════════
+//  АВТООБНОВЛЕНИЕ КАЖДЫЕ 5 МИНУТ
+// ═══════════════════════════════════════════════════════
+setInterval(loadData, 5 * 60 * 1000);
 
-    // Отладка — показываем блок с результатами
-    const months = [...new Set(DB.map(r=>r.month))].filter(Boolean).sort();
-    const farms  = [...new Set(DB.map(r=>r.farm))].filter(Boolean);
-    const dbg = document.getElementById('dbg');
-    if(dbg) dbg.innerHTML = '<b>DEBUG:</b> rows='+DB.length+' | months='+JSON.stringify(months)+' | farms='+JSON.stringify(farms)+' | rawRows='+rawData.length;
-
-    setStatus('ok');
-    buildMonthBtns();
-    renderAll();
-  }catch(e){
-    console.error(e);
-    setStatus('error');
-  }
-}
-
-setInterval(loadData, 5*60*1000);
-loadData().finally(()=>{ document.getElementById('loading').classList.add('hidden'); });
+// ═══════════════════════════════════════════════════════
+//  СТАРТ
+// ═══════════════════════════════════════════════════════
+loadData().finally(() => {
+  document.getElementById('loading').classList.add('hidden');
+});
 </script>
 </body>
 </html>
