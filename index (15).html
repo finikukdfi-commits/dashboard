@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дашборд производства 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#f5f6fa;--bg2:#ffffff;--bg3:#eef0f5;--bg4:#dde1ea;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);
+  --text:#1a1d23;--text2:#5a6070;--text3:#9aa0b0;
+  --green:#1a9e3f;--green-bg:rgba(26,158,63,0.09);
+  --red:#d93025;--red-bg:rgba(217,48,37,0.09);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,0.09);
+  --blue:#1a6ed8;--blue-bg:rgba(26,110,216,0.07);
+  --purple:#6d3fc0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5;}
+.header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(245,246,250,0.97);backdrop-filter:blur(12px);z-index:100;gap:12px;flex-wrap:wrap;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.logo{width:34px;height:34px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.h-title{font-size:14px;font-weight:600;color:var(--text);}
+.h-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.nav-tabs{display:flex;gap:3px;}
+.nav-tab{padding:6px 14px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--text2);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;transition:all .15s;}
+.nav-tab:hover{background:var(--bg3);color:var(--text);}
+.nav-tab.active{background:var(--bg2);border-color:var(--border2);color:var(--text);font-weight:500;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.badge{display:flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid transparent;}
+.badge.green{color:var(--green);background:var(--green-bg);border-color:rgba(26,158,63,0.2);}
+.badge.red{color:var(--red);background:var(--red-bg);border-color:rgba(217,48,37,0.2);}
+.badge.amber{color:var(--amber);background:var(--amber-bg);border-color:rgba(180,83,9,0.2);}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.dot.live{animation:pulse 2s infinite;}
+#update-time{font-size:11px;color:var(--text3);}
+.filters{padding:9px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:var(--bg2);}
+.f-label{font-size:11px;color:var(--text3);white-space:nowrap;font-weight:500;}
+.f-btn{padding:4px 11px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text2);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;transition:all .15s;white-space:nowrap;}
+.f-btn:hover{border-color:var(--border2);color:var(--text);background:var(--bg3);}
+.f-btn.active{background:var(--blue-bg);border-color:rgba(26,110,216,0.35);color:var(--blue);font-weight:500;}
+.f-sep{width:1px;height:14px;background:var(--border2);}
+#loading{position:fixed;inset:0;background:rgba(245,246,250,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:14px;}
+.spinner{width:36px;height:36px;border:3px solid var(--bg4);border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#load-text{font-size:13px;color:var(--text2);}
+#loading.hidden{display:none;}
+.main{padding:18px 24px;}
+.page{display:none;}
+.page.active{display:block;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px;}
+.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden;transition:box-shadow .15s;}
+.kpi-card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.07);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,#2563eb);border-radius:10px 10px 0 0;}
+.kpi-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-weight:500;}
+.kpi-value{font-size:20px;font-weight:600;color:var(--text);font-family:'IBM Plex Mono',monospace;line-height:1.2;}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:3px;}
+.kpi-delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:4px;margin-top:6px;font-weight:500;}
+.kpi-delta.pos{background:var(--green-bg);color:var(--green);}
+.kpi-delta.neg{background:var(--red-bg);color:var(--red);}
+.kpi-delta.neu{background:var(--amber-bg);color:var(--amber);}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+@media(max-width:900px){.grid-2-1,.grid-2{grid-template-columns:1fr;}}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;}
+.card-title{font-size:12px;font-weight:600;color:var(--text);}
+.card-hint{font-size:11px;color:var(--text3);margin-top:2px;}
+.legend{display:flex;flex-wrap:wrap;gap:8px;}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);}
+.legend-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.chart-wrap{position:relative;}
+.table-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{padding:8px 11px;text-align:right;color:var(--text3);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:var(--bg3);white-space:nowrap;}
+th:first-child{text-align:left;}
+td{padding:8px 11px;border-bottom:1px solid var(--border);color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:11px;text-align:right;white-space:nowrap;}
+td:first-child{color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;text-align:left;font-weight:500;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg3);}
+tr.total-row td{background:var(--bg3);color:var(--text);font-weight:600;border-top:1px solid var(--border2);}
+.pb{font-size:10px;padding:1px 5px;border-radius:3px;margin-left:3px;display:inline-block;font-weight:500;}
+.pb.up{background:var(--green-bg);color:var(--green);}
+.pb.dn{background:var(--red-bg);color:var(--red);}
+.pb.nu{background:var(--amber-bg);color:var(--amber);}
+.farm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+@media(max-width:700px){.farm-grid{grid-template-columns:1fr;}}
+.farm-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.farm-name{font-size:13px;font-weight:600;margin-bottom:11px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+.fdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.farm-metrics{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.fm-label{font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:.4px;}
+.fm-val{font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--text);font-weight:500;}
+.prog{height:3px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:2px;transition:width .6s ease;}
+.fm-pct{font-size:10px;color:var(--text3);margin-top:3px;}
+.sec-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin:18px 0 9px;font-weight:600;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div id="load-text">Загрузка данных из Google Sheets...</div>
+</div>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">🥛</div>
+    <div>
+      <div class="h-title">Дашборд производства 2026</div>
+      <div class="h-sub">Astana Onim + Burabay Milk</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('prod',this)">Производство</button>
+    <button class="nav-tab" onclick="showPage('proc',this)">Переработка и реализация</button>
+  </div>
+  <div class="header-right">
+    <span id="update-time"></span>
+    <div id="status-badge" class="badge green"><div class="dot live"></div>Данные актуальны</div>
+  </div>
+</div>
+
+<div class="filters">
+  <span class="f-label">Период:</span>
+  <button class="f-btn active" onclick="setMonth('all',this)">Весь год</button>
+  <span id="month-btns"></span>
+  <div class="f-sep"></div>
+  <span class="f-label">Ферма:</span>
+  <button class="f-btn active" id="fb-all" onclick="setFarm('all',this)">Все</button>
+  <button class="f-btn" id="fb-ao" onclick="setFarm('astana onim',this)">Astana Onim</button>
+  <button class="f-btn" id="fb-bm" onclick="setFarm('burabay milk',this)">Burabay Milk</button>
+</div>
+
+<div id="dbg" style="background:#fff3cd;padding:8px 24px;font-size:12px;font-family:monospace;border-bottom:1px solid #ffc107;">Загрузка...</div>
+<div class="main">
+
+<div id="page-prod" class="page active">
+  <div class="kpi-grid" id="kpi-prod"></div>
+  <div class="grid-2-1">
+    <div class="chart-card">
+      <div class="card-header">
+        <div><div class="card-title">Надои (л) по неделям — план vs факт</div><div class="card-hint">Сумма суточных надоев</div></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>План</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Факт</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:210px"><canvas id="c-milk-pf"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="card-header"><div><div class="card-title">Исполнение плана надоев %</div><div class="card-hint">По неделям</div></div></div>
+      <div class="chart-wrap" style="height:210px"><canvas id="c-exec-pct"></canvas></div>
+    </div>
+  </div>
+  <div class="farm-grid" id="farm-cards"></div>
+  <div class="sec-title">Сравнение план / факт за месяц</div>
+  <div class="table-card">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Месяц</th>
+          <th>Надои план (л)</th><th>Надои факт (л)</th><th>Исп.</th>
+          <th>Поголовье план</th><th>Поголовье факт</th><th>Исп.</th>
+          <th>Дойных план</th><th>Дойных факт</th><th>Исп.</th>
+        </tr></thead>
+        <tbody id="tb-monthly"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="sec-title">Нарастающий итог — надои (план vs факт)</div>
+  <div class="chart-card" style="margin-bottom:12px">
+    <div class="card-header">
+      <div class="card-title">Нарастающий итог надоев по неделям</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div>План нараст.</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Факт нараст.</div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height:190px"><canvas id="c-cum-milk"></canvas></div>
+  </div>
+  <div class="sec-title">Факт к факту — месяц к месяцу (МоМ)</div>
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="card-header"><div class="card-title">Надои — динамика МоМ</div></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="c-mom-milk"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="card-header"><div class="card-title">Поголовье — динамика МоМ</div></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="c-mom-herd"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div id="page-proc" class="page">
+  <div class="kpi-grid" id="kpi-proc"></div>
+  <div class="grid-2-1">
+    <div class="chart-card">
+      <div class="card-header">
+        <div><div class="card-title">Передано на переработку (л) — план vs факт</div></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>План</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>Факт</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:210px"><canvas id="c-proc-pf"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="card-header"><div class="card-title">Доля по фермам (факт)</div></div>
+      <div class="chart-wrap" style="height:210px"><canvas id="c-proc-pie"></canvas></div>
+    </div>
+  </div>
+  <div class="sec-title">Сравнение план / факт по месяцам</div>
+  <div class="table-card">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Месяц</th>
+          <th>AO план (л)</th><th>AO факт (л)</th><th>AO %</th>
+          <th>BM план (л)</th><th>BM факт (л)</th><th>BM %</th>
+          <th>Итого план (л)</th><th>Итого факт (л)</th><th>Итого %</th>
+        </tr></thead>
+        <tbody id="tb-proc"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="sec-title">Нарастающий итог — передано на переработку</div>
+  <div class="chart-card" style="margin-bottom:12px">
+    <div class="card-header">
+      <div class="card-title">Нарастающий итог по фермам</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div>AO план</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>AO факт</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c4b5fd"></div>BM план</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>BM факт</div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height:200px"><canvas id="c-cum-proc"></canvas></div>
+  </div>
+  <div class="sec-title">Факт к факту — месяц к месяцу (МоМ)</div>
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="card-header"><div class="card-title">Astana Onim — переработка МоМ</div></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="c-ao-mom"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="card-header"><div class="card-title">Burabay Milk — переработка МоМ</div></div>
+      <div class="chart-wrap" style="height:170px"><canvas id="c-bm-mom"></canvas></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2BjTps8sq_ihSeQ0de732F1WnMAomnLYNgHYu2S4ypE_87VOMaFFiSR9QIufttbfQ/exec';
+
+// ── ВСТРОЕННЫЕ ДАННЫЕ (из БД.xlsx, актуальны на момент публикации) ──────────
+// Формат: mo=месяц, wk=номер недели, wl=метка недели, f=ферма,
+//         p=1(план)/0(факт), ml=надои л, h=поголовье, d=дойных, pr=переработка
+const STATIC_DB = [{"mo":"янв.","wk":1,"wl":"Н1","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"astana onim","p":1,"ml":12990.0,"h":952.0,"d":433.0,"pr":12850.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"astana onim","p":0,"ml":10705.0,"h":874.0,"d":368.0,"pr":10228.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"astana onim","p":0,"ml":11122.0,"h":874.0,"d":368.0,"pr":10341.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"astana onim","p":0,"ml":10898.0,"h":875.0,"d":369.0,"pr":10129.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"astana onim","p":0,"ml":10754.0,"h":875.0,"d":369.0,"pr":9993.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":0,"ml":11043.0,"h":876.0,"d":370.0,"pr":10266.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":0,"ml":11120.0,"h":876.0,"d":370.0,"pr":10339.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":0,"ml":11176.0,"h":876.0,"d":370.0,"pr":10392.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":0,"ml":11193.0,"h":876.0,"d":370.0,"pr":10408.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":0,"ml":10763.0,"h":876.0,"d":370.0,"pr":10001.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":0,"ml":10847.0,"h":877.0,"d":371.0,"pr":10041.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"astana onim","p":0,"ml":11098.0,"h":877.0,"d":371.0,"pr":10278.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":0,"ml":11010.0,"h":880.0,"d":373.0,"pr":10195.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":0,"ml":10728.0,"h":881.0,"d":374.0,"pr":9928.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":0,"ml":10491.0,"h":882.0,"d":375.0,"pr":9664.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":0,"ml":10169.0,"h":883.0,"d":376.0,"pr":9359.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":0,"ml":10156.0,"h":883.0,"d":376.0,"pr":9347.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":0,"ml":10323.0,"h":885.0,"d":378.0,"pr":9505.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"astana onim","p":0,"ml":10200.0,"h":885.0,"d":378.0,"pr":9389.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":0,"ml":10780.0,"h":886.0,"d":379.0,"pr":9937.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":0,"ml":10067.0,"h":886.0,"d":379.0,"pr":9263.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":0,"ml":10445.0,"h":887.0,"d":380.0,"pr":9620.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":0,"ml":10498.0,"h":889.0,"d":382.0,"pr":9671.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":0,"ml":10648.0,"h":890.0,"d":383.0,"pr":9792.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":0,"ml":10658.0,"h":891.0,"d":384.0,"pr":9802.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"astana onim","p":0,"ml":10503.0,"h":892.0,"d":385.0,"pr":9655.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"astana onim","p":0,"ml":10871.0,"h":892.0,"d":385.0,"pr":10003.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"astana onim","p":0,"ml":11219.0,"h":892.0,"d":385.0,"pr":10053.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"astana onim","p":0,"ml":10970.0,"h":893.0,"d":386.0,"pr":9824.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"astana onim","p":0,"ml":10985.0,"h":894.0,"d":387.0,"pr":9838.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"astana onim","p":0,"ml":11036.0,"h":894.0,"d":387.0,"pr":10159.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"astana onim","p":0,"ml":11131.0,"h":883.0,"d":388.0,"pr":10249.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":10000.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"burabay milk","p":1,"ml":10908.0,"h":991.0,"d":409.0,"pr":9968.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"burabay milk","p":0,"ml":7240.0,"h":870.0,"d":290.0,"pr":0},{"mo":"янв.","wk":1,"wl":"Н1","f":"burabay milk","p":0,"ml":6893.0,"h":870.0,"d":290.0,"pr":4138.0},{"mo":"янв.","wk":1,"wl":"Н1","f":"burabay milk","p":0,"ml":7044.0,"h":870.0,"d":290.0,"pr":0},{"mo":"янв.","wk":1,"wl":"Н1","f":"burabay milk","p":0,"ml":7693.0,"h":870.0,"d":290.0,"pr":3156.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":0,"ml":8125.0,"h":870.0,"d":290.0,"pr":7773.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":0,"ml":8143.0,"h":870.0,"d":290.0,"pr":7791.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":0,"ml":8152.0,"h":870.0,"d":290.0,"pr":7239.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":0,"ml":7217.0,"h":870.0,"d":290.0,"pr":4309.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":0,"ml":8143.0,"h":870.0,"d":290.0,"pr":10928.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":0,"ml":7978.0,"h":870.0,"d":290.0,"pr":7596.0},{"mo":"янв.","wk":2,"wl":"Н2","f":"burabay milk","p":0,"ml":8105.0,"h":870.0,"d":290.0,"pr":7715.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":0,"ml":8290.0,"h":870.0,"d":290.0,"pr":7924.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":0,"ml":8239.0,"h":870.0,"d":290.0,"pr":7868.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":0,"ml":7998.0,"h":870.0,"d":290.0,"pr":7634.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":0,"ml":8084.0,"h":870.0,"d":290.0,"pr":7719.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":0,"ml":8124.0,"h":870.0,"d":290.0,"pr":7758.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":0,"ml":8346.0,"h":870.0,"d":290.0,"pr":8018.0},{"mo":"янв.","wk":3,"wl":"Н3","f":"burabay milk","p":0,"ml":8071.0,"h":870.0,"d":290.0,"pr":7733.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":0,"ml":8153.0,"h":870.0,"d":290.0,"pr":7813.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":0,"ml":8100.0,"h":870.0,"d":290.0,"pr":7761.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":0,"ml":8193.0,"h":870.0,"d":290.0,"pr":7833.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":0,"ml":8377.0,"h":870.0,"d":290.0,"pr":7976.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":0,"ml":8303.0,"h":870.0,"d":290.0,"pr":7733.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":0,"ml":8539.0,"h":870.0,"d":290.0,"pr":7990.0},{"mo":"янв.","wk":4,"wl":"Н4","f":"burabay milk","p":0,"ml":8375.0,"h":870.0,"d":290.0,"pr":7833.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"burabay milk","p":0,"ml":8386.0,"h":870.0,"d":290.0,"pr":7719.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"burabay milk","p":0,"ml":8736.0,"h":870.0,"d":290.0,"pr":8304.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"burabay milk","p":0,"ml":8500.0,"h":870.0,"d":290.0,"pr":7847.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"burabay milk","p":0,"ml":8536.0,"h":870.0,"d":290.0,"pr":8004.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"burabay milk","p":0,"ml":8619.0,"h":870.0,"d":290.0,"pr":8103.0},{"mo":"янв.","wk":5,"wl":"Н5","f":"burabay milk","p":0,"ml":8753.0,"h":904.0,"d":290.0,"pr":8234.0},{"mo":"февр.","wk":5,"wl":"Н5","f":"astana onim","p":1,"ml":11550.0,"h":952.0,"d":385.0,"pr":11000.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"astana onim","p":1,"ml":12900.0,"h":997.0,"d":430.0,"pr":12770.0},{"mo":"февр.","wk":5,"wl":"Н5","f":"astana onim","p":0,"ml":10604.0,"h":898.0,"d":394.0,"pr":9771.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":0,"ml":10972.0,"h":898.0,"d":394.0,"pr":10119.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":0,"ml":10840.0,"h":900.0,"d":394.0,"pr":9994.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":0,"ml":10333.0,"h":900.0,"d":393.0,"pr":9514.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":0,"ml":10266.0,"h":900.0,"d":393.0,"pr":9451.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":0,"ml":10340.0,"h":900.0,"d":393.0,"pr":9521.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":0,"ml":10258.0,"h":896.0,"d":393.0,"pr":9713.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"astana onim","p":0,"ml":10274.0,"h":900.0,"d":393.0,"pr":9729.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":0,"ml":10288.0,"h":900.0,"d":393.0,"pr":9742.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":0,"ml":10473.0,"h":900.0,"d":393.0,"pr":9874.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":0,"ml":10373.0,"h":901.0,"d":393.0,"pr":10113.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":0,"ml":10682.0,"h":901.0,"d":389.0,"pr":10422.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":0,"ml":10574.0,"h":901.0,"d":388.0,"pr":10314.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":0,"ml":10589.0,"h":899.0,"d":388.0,"pr":10329.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"astana onim","p":0,"ml":10552.0,"h":899.0,"d":388.0,"pr":10292.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":0,"ml":10587.0,"h":898.0,"d":380.0,"pr":10327.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":0,"ml":10494.0,"h":900.0,"d":380.0,"pr":10234.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":0,"ml":10704.0,"h":899.0,"d":380.0,"pr":10147.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":0,"ml":10218.0,"h":902.0,"d":382.0,"pr":9958.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":0,"ml":10347.0,"h":905.0,"d":382.0,"pr":10087.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":0,"ml":10010.0,"h":901.0,"d":382.0,"pr":9750.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"astana onim","p":0,"ml":10266.0,"h":909.0,"d":382.0,"pr":10006.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"astana onim","p":0,"ml":9881.0,"h":904.0,"d":382.0,"pr":9621.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"astana onim","p":0,"ml":10215.0,"h":907.0,"d":370.0,"pr":9955.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"astana onim","p":0,"ml":9929.0,"h":910.0,"d":370.0,"pr":9669.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"astana onim","p":0,"ml":9653.0,"h":909.0,"d":370.0,"pr":9393.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"astana onim","p":0,"ml":9933.0,"h":918.0,"d":373.0,"pr":9633.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"astana onim","p":0,"ml":9899.0,"h":927.0,"d":373.0,"pr":9569.0},{"mo":"февр.","wk":5,"wl":"Н5","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"burabay milk","p":1,"ml":11165.0,"h":953.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"burabay milk","p":1,"ml":11151.0,"h":955.0,"d":419.0,"pr":10000.0},{"mo":"февр.","wk":5,"wl":"Н5","f":"burabay milk","p":0,"ml":8737.0,"h":886.0,"d":290.0,"pr":8318.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":0,"ml":8653.0,"h":886.0,"d":290.0,"pr":8205.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":0,"ml":8518.0,"h":886.0,"d":290.0,"pr":8089.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":0,"ml":8542.0,"h":886.0,"d":290.0,"pr":8103.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":0,"ml":8374.0,"h":886.0,"d":290.0,"pr":7819.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":0,"ml":8884.0,"h":886.0,"d":290.0,"pr":8347.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":0,"ml":8844.0,"h":886.0,"d":290.0,"pr":8234.0},{"mo":"февр.","wk":6,"wl":"Н6","f":"burabay milk","p":0,"ml":8896.0,"h":886.0,"d":290.0,"pr":8291.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":0,"ml":8873.0,"h":886.0,"d":290.0,"pr":8118.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":0,"ml":8891.0,"h":886.0,"d":290.0,"pr":8118.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":0,"ml":9007.0,"h":886.0,"d":290.0,"pr":8948.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":0,"ml":8920.8,"h":886.0,"d":290.0,"pr":8433.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":0,"ml":8765.0,"h":886.0,"d":290.0,"pr":8282.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":0,"ml":8918.0,"h":886.0,"d":290.0,"pr":8430.0},{"mo":"февр.","wk":7,"wl":"Н7","f":"burabay milk","p":0,"ml":8882.0,"h":886.0,"d":290.0,"pr":8312.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":0,"ml":9038.0,"h":886.0,"d":294.0,"pr":8690.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":0,"ml":8957.0,"h":492.0,"d":294.0,"pr":8576.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":0,"ml":9179.0,"h":492.0,"d":294.0,"pr":8834.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":0,"ml":8942.0,"h":492.0,"d":294.0,"pr":8604.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":0,"ml":8993.0,"h":492.0,"d":294.0,"pr":8647.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":0,"ml":9156.0,"h":492.0,"d":294.0,"pr":8806.0},{"mo":"февр.","wk":8,"wl":"Н8","f":"burabay milk","p":0,"ml":9113.0,"h":492.0,"d":294.0,"pr":8764.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"burabay milk","p":0,"ml":9185.0,"h":492.0,"d":294.0,"pr":8834.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"burabay milk","p":0,"ml":8891.0,"h":492.0,"d":294.0,"pr":4542.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"burabay milk","p":0,"ml":9095.0,"h":489.0,"d":294.0,"pr":8977.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"burabay milk","p":0,"ml":8963.0,"h":485.0,"d":294.0,"pr":8312.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"burabay milk","p":0,"ml":9212.0,"h":485.0,"d":294.0,"pr":9319.0},{"mo":"февр.","wk":9,"wl":"Н9","f":"burabay milk","p":0,"ml":9187.2,"h":485.0,"d":294.0,"pr":11266.0},{"mo":"мар.","wk":9,"wl":"Н9","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":14,"wl":"Н14","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":14,"wl":"Н14","f":"astana onim","p":1,"ml":13298.0,"h":806.0,"d":443.0,"pr":13199.0},{"mo":"мар.","wk":9,"wl":"Н9","f":"astana onim","p":0,"ml":9595.0,"h":915.0,"d":373.0,"pr":9265.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":0,"ml":9675.0,"h":914.0,"d":384.0,"pr":9345.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":0,"ml":9322.0,"h":916.0,"d":384.0,"pr":9266.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":0,"ml":9913.0,"h":917.0,"d":384.0,"pr":9583.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":0,"ml":10022.0,"h":921.0,"d":384.0,"pr":9819.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":0,"ml":9957.0,"h":924.0,"d":384.0,"pr":9597.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":0,"ml":10044.0,"h":926.0,"d":386.0,"pr":9684.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"astana onim","p":0,"ml":10325.0,"h":927.0,"d":386.0,"pr":9965.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":0,"ml":9795.0,"h":928.0,"d":386.0,"pr":9435.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":0,"ml":9927.0,"h":928.0,"d":402.0,"pr":9291.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":0,"ml":9263.0,"h":928.0,"d":398.0,"pr":8646.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":0,"ml":9631.0,"h":928.0,"d":398.0,"pr":9003.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":0,"ml":9976.0,"h":929.0,"d":398.0,"pr":9339.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":0,"ml":10221.0,"h":929.0,"d":385.0,"pr":9577.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"astana onim","p":0,"ml":10047.0,"h":929.0,"d":385.0,"pr":9408.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":0,"ml":10154.0,"h":928.0,"d":384.0,"pr":9512.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":0,"ml":10714.0,"h":929.0,"d":384.0,"pr":9775.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":0,"ml":10339.0,"h":929.0,"d":384.0,"pr":9420.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":0,"ml":10389.0,"h":870.0,"d":401.0,"pr":9467.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":0,"ml":10399.0,"h":869.0,"d":390.0,"pr":9477.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":0,"ml":10285.0,"h":869.0,"d":385.0,"pr":9369.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"astana onim","p":0,"ml":10578.0,"h":871.0,"d":385.0,"pr":9646.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":0,"ml":11013.0,"h":871.0,"d":385.0,"pr":10058.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":0,"ml":10901.0,"h":870.0,"d":384.0,"pr":9952.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":0,"ml":10578.0,"h":873.0,"d":384.0,"pr":9646.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":0,"ml":10670.0,"h":870.0,"d":384.0,"pr":9468.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":0,"ml":10756.0,"h":870.0,"d":385.0,"pr":9547.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"astana onim","p":0,"ml":10638.0,"h":870.0,"d":384.0,"pr":9438.0},{"mo":"мар.","wk":9,"wl":"Н9","f":"burabay milk","p":1,"ml":10382.0,"h":921.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":1,"ml":10382.0,"h":921.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":1,"ml":10382.0,"h":921.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":1,"ml":10382.0,"h":921.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":1,"ml":10382.0,"h":921.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":1,"ml":10382.0,"h":921.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":1,"ml":10382.0,"h":921.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":14,"wl":"Н14","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":14,"wl":"Н14","f":"burabay milk","p":1,"ml":10382.0,"h":922.0,"d":426.0,"pr":10000.0},{"mo":"мар.","wk":9,"wl":"Н9","f":"burabay milk","p":0,"ml":9649.0,"h":879.0,"d":291.0,"pr":10591.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":0,"ml":9239.0,"h":879.0,"d":291.0,"pr":8674.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":0,"ml":9164.0,"h":879.0,"d":291.0,"pr":8627.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":0,"ml":9248.0,"h":879.0,"d":291.0,"pr":8706.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":0,"ml":9268.0,"h":879.0,"d":291.0,"pr":8713.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":0,"ml":9260.0,"h":879.0,"d":291.0,"pr":8699.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":0,"ml":9229.0,"h":879.0,"d":291.0,"pr":8670.0},{"mo":"мар.","wk":10,"wl":"Н10","f":"burabay milk","p":0,"ml":9251.0,"h":879.0,"d":291.0,"pr":8934.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":0,"ml":9303.0,"h":879.0,"d":291.0,"pr":8985.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":0,"ml":9409.0,"h":879.0,"d":291.0,"pr":9088.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":0,"ml":9149.0,"h":879.0,"d":291.0,"pr":8835.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":0,"ml":9332.0,"h":866.0,"d":305.0,"pr":9001.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":0,"ml":9073.0,"h":854.0,"d":305.0,"pr":6157.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":0,"ml":8843.0,"h":854.0,"d":305.0,"pr":0.0},{"mo":"мар.","wk":11,"wl":"Н11","f":"burabay milk","p":0,"ml":8974.0,"h":854.0,"d":305.0,"pr":8217.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":0,"ml":9309.0,"h":853.0,"d":305.0,"pr":8734.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":0,"ml":9452.0,"h":853.0,"d":305.0,"pr":8875.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":0,"ml":9708.0,"h":853.0,"d":305.0,"pr":9117.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":0,"ml":9735.0,"h":853.0,"d":305.0,"pr":9143.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":0,"ml":9633.0,"h":853.0,"d":305.0,"pr":8579.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":0,"ml":9597.0,"h":853.0,"d":305.0,"pr":8541.0},{"mo":"мар.","wk":12,"wl":"Н12","f":"burabay milk","p":0,"ml":9809.0,"h":853.0,"d":305.0,"pr":8725.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":0,"ml":9498.0,"h":853.0,"d":305.0,"pr":8446.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":0,"ml":9660.0,"h":853.0,"d":305.0,"pr":8391.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":0,"ml":9694.0,"h":853.0,"d":305.0,"pr":8416.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":0,"ml":9459.0,"h":853.0,"d":305.0,"pr":8650.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":0,"ml":9388.0,"h":853.0,"d":305.0,"pr":8559.0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":0,"ml":0.0,"h":853.0,"d":305.0,"pr":0},{"mo":"мар.","wk":13,"wl":"Н13","f":"burabay milk","p":0,"ml":0.0,"h":853.0,"d":0,"pr":0},{"mo":"мар.","wk":14,"wl":"Н14","f":"burabay milk","p":0,"ml":0.0,"h":853.0,"d":0,"pr":0},{"mo":"мар.","wk":14,"wl":"Н14","f":"burabay milk","p":0,"ml":4.0,"h":0.0,"d":0,"pr":0},{"mo":"апр.","wk":14,"wl":"Н14","f":"astana onim","p":1,"ml":10000.0,"h":5.0,"d":1.0,"pr":1.0},{"mo":"апр.","wk":14,"wl":"Н14","f":"astana onim","p":0,"ml":10286.0,"h":5.0,"d":1.0,"pr":1.0}];
+
+let DB = [];
+let currentMonth = 'all';
+let currentFarm  = 'all';
+let charts = {};
+
+// ── ПАРСИНГ ──────────────────────────────────────────
+// Лист БД, строка 1 = заголовок, строка 2+ = данные
+// Колонки (0-based):
+// 0=Дата, 1=сокр.дата, 2=Неделя, 3=месяц, 4=Ферма, 5=план/факт
+// 6=Валовый надой (л), 7=Общее поголовье, 8=Приплод, 9=Дойное поголовье
+// 10=Надой на 1 гол, 11=Жирность, 12=Кислотность, 13=Передано на переработку
+function parseSheet(rows) {
+  const result = [];
+  for(let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const farm = String(r[4]||'').trim();
+    const pf   = String(r[5]||'').trim().toLowerCase();
+    // Определяем месяц: сначала из колонки D (текст), потом из даты колонки A
+    const MONTH_KEYS = ['янв.','февр.','мар.','апр.','май','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
+    const MONTH_MAP  = {
+      'янв.':'янв.','янв':'янв.',
+      'февр.':'февр.','февр':'февр.','фев.':'февр.','фев':'февр.',
+      'мар.':'мар.','март':'мар.','мар':'мар.',
+      'апр.':'апр.','апр':'апр.',
+      'май':'май',
+      'июн.':'июн.','июн':'июн.',
+      'июл.':'июл.','июл':'июл.',
+      'авг.':'авг.','авг':'авг.',
+      'сент.':'сент.','сент':'сент.','сен.':'сент.','сен':'сент.',
+      'окт.':'окт.','окт':'окт.',
+      'нояб.':'нояб.','нояб':'нояб.','ноя.':'нояб.','ноя':'нояб.',
+      'дек.':'дек.','дек':'дек.'
+    };
+    // Приоритет: колонка D (месяц как текст)
+    let month = MONTH_MAP[String(r[3]||'').trim().toLowerCase()] || '';
+    // Если в D пусто — берём из даты колонки A
+    if(!month) {
+      const ds = String(r[0]||'');
+      let mIdx = -1;
+      if(ds.includes('T') || (ds.indexOf('-') === 4)) {
+        mIdx = parseInt(ds.substring(5,7)) - 1;
+      } else if(ds.includes('.')) {
+        mIdx = parseInt(ds.split('.')[1]) - 1;
+      }
+      if(mIdx >= 0 && mIdx <= 11) month = MONTH_KEYS[mIdx];
+    }
+    if(!month) continue;
+    const weekStr = String(r[2]||'').trim();
+    const weekNum = parseInt(weekStr.replace(/\D/g,''))||0;
+    if(!farm || !weekNum || !month) continue;
+    if(pf !== "план" && pf !== "факт") continue;
+
+    const n = idx => {
+      const v = r[idx];
+      const x = parseFloat(String(v||'').replace(/\s/g,'').replace(',','.'));
+      return isNaN(x) ? 0 : x;
+    };
+
+    const milk  = n(6);
+    const herd  = n(7);
+    const dairy = n(9);
+    const proc  = n(13);
+
+    // Пропускаем полностью пустые строки (будущие периоды без данных)
+    // Для плана: должен быть хоть какой-то плановый надой или поголовье
+    // Для факта: пропускаем строки где всё нулевое
+    if(pf === 'план' && milk === 0 && herd === 0) continue;
+    if(pf === 'факт' && milk === 0 && herd === 0 && dairy === 0) continue;
+
+    // Защита от аномальных значений
+    const milkSafe = (milk > 0 && milk < 100000) ? milk : 0;
+
+    result.push({
+      month,
+      week:    weekNum,
+      weekLabel: 'Н' + weekNum,
+      farm:    farm.toLowerCase(),
+      isPlan:  pf === 'план',
+      isFact:  pf === 'факт',
+      milk:    milkSafe,
+      herd,
+      dairy,
+      proc,
+    });
+  }
+  return result;
+}
+
+// ── АГРЕГАЦИЯ ─────────────────────────────────────────
+function getRows() {
+  return DB.filter(r => {
+    const mOk = currentMonth === 'all' || r.month === currentMonth;
+    const fOk = currentFarm  === 'all' || r.farm  === currentFarm;
+    return mOk && fOk;
+  });
+}
+
+function byWeek(rows) {
+  // Группируем по неделе. Внутри недели суммируем суточные значения всех ферм.
+  // Поголовье — максимум (не суммировать!), надои/переработка — сумма дней.
+  const map = {};
+  // Для поголовья: берём максимум по последнему дню каждой фермы в неделе
+  const herdPlan = {}; // week -> max plan herd
+  const herdFact = {}; // week -> max fact herd
+  const dairyPlan = {};
+  const dairyFact = {};
+
+  for(const r of rows) {
+    const wk = r.week;
+    if(!map[wk]) map[wk] = {week:wk, label:r.weekLabel, pm:0,fm:0, ph:0,fh:0, pd:0,fd:0, pp:0,fp:0};
+    const w = map[wk];
+    if(r.isPlan){
+      w.pm += r.milk;
+      w.pp += r.proc;
+      // Поголовье: суммируем максимумы по каждой ферме отдельно
+      const kp = wk + '|' + r.farm;
+      if(!herdPlan[kp] || r.herd > herdPlan[kp]) herdPlan[kp] = r.herd;
+      if(!dairyPlan[kp] || r.dairy > dairyPlan[kp]) dairyPlan[kp] = r.dairy;
+    }
+    if(r.isFact){
+      w.fm += r.milk;
+      w.fp += r.proc;
+      const kf = wk + '|' + r.farm;
+      if(!herdFact[kf] || r.herd > herdFact[kf]) herdFact[kf] = r.herd;
+      if(!dairyFact[kf] || r.dairy > dairyFact[kf]) dairyFact[kf] = r.dairy;
+    }
+  }
+  // Проставляем поголовье: сумма максимумов по фермам
+  for(const wk of Object.keys(map)) {
+    map[wk].ph = Object.entries(herdPlan).filter(([k])=>k.startsWith(wk+'|')).reduce((s,[,v])=>s+v, 0);
+    map[wk].fh = Object.entries(herdFact).filter(([k])=>k.startsWith(wk+'|')).reduce((s,[,v])=>s+v, 0);
+    map[wk].pd = Object.entries(dairyPlan).filter(([k])=>k.startsWith(wk+'|')).reduce((s,[,v])=>s+v, 0);
+    map[wk].fd = Object.entries(dairyFact).filter(([k])=>k.startsWith(wk+'|')).reduce((s,[,v])=>s+v, 0);
+  }
+  return Object.values(map).sort((a,b)=>a.week-b.week);
+}
+
+const MO = ['янв.','февр.','мар.','апр.','май','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
+const MN = {'янв.':'Январь','февр.':'Февраль','март':'Март','мар.':'Март','апр.':'Апрель','май':'Май','июн.':'Июнь','июл.':'Июль','авг.':'Август','сент.':'Сентябрь','окт.':'Октябрь','нояб.':'Ноябрь','дек.':'Декабрь'};
+
+function byMonth(rows) {
+  const map = {};
+  // Поголовье: берём максимум по последнему дню каждой фермы в месяце, потом суммируем по фермам
+  const herdPlan = {}, herdFact = {}, dairyPlan = {}, dairyFact = {};
+
+  for(const r of rows) {
+    const mo = r.month;
+    if(!map[mo]) map[mo]={month:mo, name:MN[mo]||mo, pm:0,fm:0,ph:0,fh:0,pd:0,fd:0,pp:0,fp:0};
+    const m = map[mo];
+    if(r.isPlan){
+      m.pm += r.milk; m.pp += r.proc;
+      const kp = mo + '|' + r.farm;
+      if(!herdPlan[kp] || r.herd > herdPlan[kp]) herdPlan[kp] = r.herd;
+      if(!dairyPlan[kp] || r.dairy > dairyPlan[kp]) dairyPlan[kp] = r.dairy;
+    }
+    if(r.isFact){
+      m.fm += r.milk; m.fp += r.proc;
+      const kf = mo + '|' + r.farm;
+      if(!herdFact[kf] || r.herd > herdFact[kf]) herdFact[kf] = r.herd;
+      if(!dairyFact[kf] || r.dairy > dairyFact[kf]) dairyFact[kf] = r.dairy;
+    }
+  }
+  for(const mo of Object.keys(map)) {
+    map[mo].ph = Object.entries(herdPlan).filter(([k])=>k.startsWith(mo+'|')).reduce((s,[,v])=>s+v,0);
+    map[mo].fh = Object.entries(herdFact).filter(([k])=>k.startsWith(mo+'|')).reduce((s,[,v])=>s+v,0);
+    map[mo].pd = Object.entries(dairyPlan).filter(([k])=>k.startsWith(mo+'|')).reduce((s,[,v])=>s+v,0);
+    map[mo].fd = Object.entries(dairyFact).filter(([k])=>k.startsWith(mo+'|')).reduce((s,[,v])=>s+v,0);
+  }
+  return MO.filter(k=>map[k]).map(k=>map[k]);
+}
+
+// ── УТИЛИТЫ ──────────────────────────────────────────
+const fmtN = n => Math.round(n).toLocaleString('ru');
+const fmt  = n => n>=1e6?(n/1e6).toFixed(1)+'млн':n>=1e3?(n/1e3).toFixed(0)+'К':Math.round(n).toLocaleString('ru');
+const pct  = (p,f) => p ? Math.round(f/p*100) : 0;
+const pb   = (p,f) => { const v=pct(p,f); const c=v>=100?'up':v>=85?'nu':'dn'; return `<span class="pb ${c}">${v}%</span>`; };
+
+function setStatus(s) {
+  const b = document.getElementById('status-badge');
+  const t = document.getElementById('update-time');
+  if(s==='ok'){
+    b.className='badge green'; b.innerHTML='<div class="dot live"></div>Данные актуальны';
+    if(t) t.textContent='Обновлено: '+new Date().toLocaleTimeString('ru');
+  } else if(s==='loading'){
+    b.className='badge amber'; b.innerHTML='<div class="dot"></div>Обновляю...';
+  } else if(s==='static'){
+    b.className='badge amber'; b.innerHTML='<div class="dot"></div>Встроенные данные';
+    if(t) t.textContent='Google Sheets недоступен';
+  } else {
+    b.className='badge red'; b.innerHTML='<div class="dot"></div>Офлайн';
+  }
+}
+
+// ── KPI ───────────────────────────────────────────────
+function renderKPI() {
+  const rows  = getRows();
+  const weeks = byWeek(rows);
+  const totPM = weeks.reduce((s,w)=>s+w.pm,0);
+  const totFM = weeks.reduce((s,w)=>s+w.fm,0);
+  const totPH = weeks.length ? Math.max(...weeks.map(w=>w.ph)) : 0;
+  const totFH = weeks.length ? Math.max(...weeks.map(w=>w.fh)) : 0;
+  const totPD = weeks.length ? Math.max(...weeks.map(w=>w.pd)) : 0;
+  const totFD = weeks.length ? Math.max(...weeks.map(w=>w.fd)) : 0;
+  const mPct=pct(totPM,totFM), hPct=pct(totPH,totFH), dPct=pct(totPD,totFD);
+
+  document.getElementById('kpi-prod').innerHTML=[
+    {label:'Надои (факт)',      value:fmtN(totFM)+' л',     sub:'план: '+fmtN(totPM)+' л', delta:mPct+'% плана',                cls:mPct>=100?'pos':mPct>=85?'neu':'neg', accent:'#2563eb'},
+    {label:'Исп. плана надоев', value:mPct+'%',              sub:fmtN(totFM)+' из '+fmtN(totPM), delta:mPct>=100?'↑ выполнен':mPct>=85?'∼ в норме':'↓ отставание', cls:mPct>=100?'pos':mPct>=85?'neu':'neg', accent:'#16a34a'},
+    {label:'Поголовье (факт)',  value:fmtN(totFH)+' гол',   sub:'план: '+fmtN(totPH),      delta:hPct+'%',                      cls:hPct>=100?'pos':hPct>=85?'neu':'neg', accent:'#7c3aed'},
+    {label:'Дойных (факт)',     value:fmtN(totFD)+' гол',   sub:'план: '+fmtN(totPD),      delta:dPct+'%',                      cls:dPct>=100?'pos':dPct>=85?'neu':'neg', accent:'#b45309'},
+    {label:'Недель с данными',  value:weeks.length+' нед',  sub:'по текущему фильтру',     delta:'',cls:'',accent:'#9aa0b0'},
+    {label:'Дней с данными',    value:rows.filter(r=>r.isFact&&r.milk>0).length+' дн', sub:'фактических записей', delta:'',cls:'',accent:'#9aa0b0'},
+  ].map(k=>`<div class="kpi-card" style="--accent:${k.accent}">
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value">${k.value}</div>
+    <div class="kpi-sub">${k.sub}</div>
+    ${k.delta?`<div class="kpi-delta ${k.cls}">${k.delta}</div>`:''}
+  </div>`).join('');
+
+  // Переработка KPI
+  const totPP = weeks.reduce((s,w)=>s+w.pp,0);
+  const totFP = weeks.reduce((s,w)=>s+w.fp,0);
+  const pPct  = pct(totPP,totFP);
+  const aoFP  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'&&r.isFact).reduce((s,r)=>s+r.proc,0);
+  const bmFP  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'&&r.isFact).reduce((s,r)=>s+r.proc,0);
+  const aoFM  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'&&r.isFact).reduce((s,r)=>s+r.milk,0);
+  const bmFM  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'&&r.isFact).reduce((s,r)=>s+r.milk,0);
+
+  document.getElementById('kpi-proc').innerHTML=[
+    {label:'Передано на переработку', value:fmtN(totFP)+' л', sub:'план: '+fmtN(totPP)+' л', delta:pPct+'%', cls:pPct>=100?'pos':pPct>=85?'neu':'neg', accent:'#2563eb'},
+    {label:'Исп. плана переработки',  value:pPct+'%', sub:fmtN(totFP)+' из '+fmtN(totPP), delta:pPct>=100?'↑ выполнен':pPct>=85?'∼ в норме':'↓ отставание', cls:pPct>=100?'pos':pPct>=85?'neu':'neg', accent:'#16a34a'},
+    {label:'Astana Onim — надои',     value:fmtN(aoFM)+' л', sub:'передано: '+fmtN(aoFP)+' л', delta:'', cls:'', accent:'#2563eb'},
+    {label:'Burabay Milk — надои',    value:fmtN(bmFM)+' л', sub:'передано: '+fmtN(bmFP)+' л', delta:'', cls:'', accent:'#7c3aed'},
+  ].map(k=>`<div class="kpi-card" style="--accent:${k.accent}">
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value">${k.value}</div>
+    <div class="kpi-sub">${k.sub}</div>
+    ${k.delta?`<div class="kpi-delta ${k.cls}">${k.delta}</div>`:''}
+  </div>`).join('');
+}
+
+// ── КАРТОЧКИ ФЕРМ ─────────────────────────────────────
+function renderFarmCards() {
+  document.getElementById('farm-cards').innerHTML = [
+    {name:'Astana Onim', key:'astana onim', color:'#2563eb'},
+    {name:'Burabay Milk',key:'burabay milk',color:'#7c3aed'},
+  ].map(f => {
+    const rows  = DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm===f.key);
+    const weeks = byWeek(rows);
+    const pm=weeks.reduce((s,w)=>s+w.pm,0), fm=weeks.reduce((s,w)=>s+w.fm,0);
+    const ph=weeks.length?Math.max(...weeks.map(w=>w.ph)):0, fh=weeks.length?Math.max(...weeks.map(w=>w.fh)):0;
+    const pp=weeks.reduce((s,w)=>s+w.pp,0), fp=weeks.reduce((s,w)=>s+w.fp,0);
+    const mp=pct(pm,fm), hp=pct(ph,fh), prp=pct(pp,fp);
+    return `<div class="farm-card">
+      <div class="farm-name"><div class="fdot" style="background:${f.color}"></div>${f.name}</div>
+      <div class="farm-metrics">
+        <div>
+          <div class="fm-label">Надои факт / план</div>
+          <div class="fm-val">${fmtN(fm)} / ${fmtN(pm)} л</div>
+          <div class="prog"><div class="prog-fill" style="width:${Math.min(mp,100)}%;background:${f.color}"></div></div>
+          <div class="fm-pct">${mp}% выполнения</div>
+        </div>
+        <div>
+          <div class="fm-label">Поголовье факт / план</div>
+          <div class="fm-val">${fmtN(fh)} / ${fmtN(ph)} гол</div>
+          <div class="prog"><div class="prog-fill" style="width:${Math.min(hp,100)}%;background:${f.color}"></div></div>
+          <div class="fm-pct">${hp}% выполнения</div>
+        </div>
+        <div>
+          <div class="fm-label">Переработка факт / план</div>
+          <div class="fm-val">${fmtN(fp)} / ${fmtN(pp)} л</div>
+          <div class="prog"><div class="prog-fill" style="width:${Math.min(prp,100)}%;background:${f.color}"></div></div>
+          <div class="fm-pct">${prp}% выполнения</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── ТАБЛИЦЫ ───────────────────────────────────────────
+function renderTables() {
+  // Производство
+  const months = byMonth(getRows());
+  let s={pm:0,fm:0,ph:0,fh:0,pd:0,fd:0};
+  const prodRows = months.map(m=>{
+    s.pm+=m.pm;s.fm+=m.fm;s.ph=Math.max(s.ph,m.ph);s.fh=Math.max(s.fh,m.fh);s.pd=Math.max(s.pd,m.pd);s.fd=Math.max(s.fd,m.fd);
+    return `<tr><td>${m.name}</td><td>${fmtN(m.pm)}</td><td>${fmtN(m.fm)}</td><td>${pb(m.pm,m.fm)}</td><td>${fmtN(m.ph)}</td><td>${fmtN(m.fh)}</td><td>${pb(m.ph,m.fh)}</td><td>${fmtN(m.pd)}</td><td>${fmtN(m.fd)}</td><td>${pb(m.pd,m.fd)}</td></tr>`;
+  });
+  prodRows.push(`<tr class="total-row"><td>Итого</td><td>${fmtN(s.pm)}</td><td>${fmtN(s.fm)}</td><td>${pb(s.pm,s.fm)}</td><td>${fmtN(s.ph)}</td><td>${fmtN(s.fh)}</td><td>${pb(s.ph,s.fh)}</td><td>${fmtN(s.pd)}</td><td>${fmtN(s.fd)}</td><td>${pb(s.pd,s.fd)}</td></tr>`);
+  document.getElementById('tb-monthly').innerHTML = prodRows.join('');
+
+  // Переработка по фермам
+  const aoM = byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'));
+  const bmM = byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'));
+  const allMK = [...new Set([...aoM,...bmM].map(m=>m.month))].sort((a,b)=>MO.indexOf(a)-MO.indexOf(b));
+  let ps={ap:0,af:0,bp:0,bf:0};
+  const procRows = allMK.map(mk=>{
+    const ao=aoM.find(m=>m.month===mk)||{pp:0,fp:0};
+    const bm=bmM.find(m=>m.month===mk)||{pp:0,fp:0};
+    ps.ap+=ao.pp;ps.af+=ao.fp;ps.bp+=bm.pp;ps.bf+=bm.fp;
+    return `<tr><td>${MN[mk]||mk}</td><td>${fmtN(ao.pp)}</td><td>${fmtN(ao.fp)}</td><td>${pb(ao.pp,ao.fp)}</td><td>${fmtN(bm.pp)}</td><td>${fmtN(bm.fp)}</td><td>${pb(bm.pp,bm.fp)}</td><td>${fmtN(ao.pp+bm.pp)}</td><td>${fmtN(ao.fp+bm.fp)}</td><td>${pb(ao.pp+bm.pp,ao.fp+bm.fp)}</td></tr>`;
+  });
+  procRows.push(`<tr class="total-row"><td>Итого</td><td>${fmtN(ps.ap)}</td><td>${fmtN(ps.af)}</td><td>${pb(ps.ap,ps.af)}</td><td>${fmtN(ps.bp)}</td><td>${fmtN(ps.bf)}</td><td>${pb(ps.bp,ps.bf)}</td><td>${fmtN(ps.ap+ps.bp)}</td><td>${fmtN(ps.af+ps.bf)}</td><td>${pb(ps.ap+ps.bp,ps.af+ps.bf)}</td></tr>`);
+  document.getElementById('tb-proc').innerHTML = procRows.join('');
+}
+
+// ── ГРАФИКИ ───────────────────────────────────────────
+const BOPTS = {
+  responsive:true, maintainAspectRatio:false, animation:{duration:350},
+  plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',titleColor:'#1a1d23',bodyColor:'#5a6070',borderColor:'rgba(0,0,0,0.1)',borderWidth:1,padding:9}},
+  scales:{
+    x:{ticks:{color:'#9aa0b0',font:{size:10},maxRotation:45,autoSkip:true},grid:{color:'rgba(0,0,0,0.04)'},border:{color:'transparent'}},
+    y:{ticks:{color:'#9aa0b0',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'},border:{color:'transparent'}}
+  }
+};
+function dm(a,b){const r=Object.assign({},a);for(const k in b){if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k]))r[k]=dm(a[k]||{},b[k]);else r[k]=b[k];}return r;}
+function mkChart(id,type,labels,datasets,extra={}){
+  if(charts[id])charts[id].destroy();
+  const el=document.getElementById(id);if(!el)return;
+  charts[id]=new Chart(el,{type,data:{labels,datasets},options:dm(BOPTS,extra)});
+}
+const CLRS=['#2563eb','#16a34a','#b45309','#7c3aed','#dc2626'];
+
+function renderCharts() {
+  const rows   = getRows();
+  const weeks  = byWeek(rows);
+  const months = byMonth(rows);
+  const wL = weeks.map(w=>w.label);
+  const mL = months.map(m=>m.name.slice(0,3));
+
+  // Надои план/факт
+  mkChart('c-milk-pf','bar',wL,[
+    {label:'План',data:weeks.map(w=>w.pm),backgroundColor:'rgba(37,99,235,0.15)',borderColor:'#2563eb',borderWidth:1.5,borderRadius:3,order:2},
+    {label:'Факт',data:weeks.map(w=>w.fm),backgroundColor:'rgba(22,163,74,0.2)',borderColor:'#16a34a',borderWidth:1.5,borderRadius:3,order:1}
+  ]);
+
+  // % исполнения
+  mkChart('c-exec-pct','line',wL,[
+    {label:'%',data:weeks.map(w=>w.pm?Math.round(w.fm/w.pm*100):0),borderColor:'#b45309',backgroundColor:'rgba(180,83,9,0.07)',borderWidth:2,fill:true,tension:0.35,pointRadius:3,pointBackgroundColor:'#b45309'}
+  ],{scales:{x:BOPTS.scales.x,y:{...BOPTS.scales.y,min:0,max:150,ticks:{callback:v=>v+'%',color:'#9aa0b0',font:{size:10}}}}});
+
+  // Нарастающий итог
+  const allW = byWeek(DB.filter(r=>currentFarm==='all'||r.farm===currentFarm));
+  let cp=0,cf=0,cP=[],cF=[];
+  for(const w of allW){cp+=w.pm;cf+=w.fm;cP.push(cp);cF.push(cf);}
+  mkChart('c-cum-milk','line',allW.map(w=>w.label),[
+    {label:'План',data:cP,borderColor:'#93c5fd',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1.5},
+    {label:'Факт',data:cF,borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.05)',borderWidth:2,fill:true,tension:0.4,pointRadius:2}
+  ]);
+
+  // МоМ надои
+  mkChart('c-mom-milk','bar',mL,[
+    {label:'Факт',data:months.map(m=>m.fm),backgroundColor:months.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:months.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
+  ]);
+
+  // МоМ поголовье
+  mkChart('c-mom-herd','bar',mL,[
+    {label:'Факт',data:months.map(m=>m.fh),backgroundColor:months.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:months.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
+  ]);
+
+  // Переработка план/факт
+  mkChart('c-proc-pf','bar',wL,[
+    {label:'План',data:weeks.map(w=>w.pp),backgroundColor:'rgba(37,99,235,0.15)',borderColor:'#2563eb',borderWidth:1.5,borderRadius:3,order:2},
+    {label:'Факт',data:weeks.map(w=>w.fp),backgroundColor:'rgba(22,163,74,0.2)',borderColor:'#16a34a',borderWidth:1.5,borderRadius:3,order:1}
+  ]);
+
+  // Пирог
+  const aoFP=DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'&&r.isFact).reduce((s,r)=>s+r.proc,0);
+  const bmFP=DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'&&r.isFact).reduce((s,r)=>s+r.proc,0);
+  if(charts['c-proc-pie'])charts['c-proc-pie'].destroy();
+  const pc=document.getElementById('c-proc-pie');
+  if(pc)charts['c-proc-pie']=new Chart(pc,{
+    type:'doughnut',
+    data:{labels:['Astana Onim','Burabay Milk'],datasets:[{data:[aoFP,bmFP],backgroundColor:['rgba(37,99,235,0.7)','rgba(124,58,237,0.7)'],borderColor:['#2563eb','#7c3aed'],borderWidth:1.5,hoverOffset:5}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'bottom',labels:{color:'#5a6070',font:{size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'#fff',titleColor:'#1a1d23',bodyColor:'#5a6070',borderColor:'rgba(0,0,0,0.1)',borderWidth:1}}}
+  });
+
+  // Нарастающий итог переработки
+  const aoW=byWeek(DB.filter(r=>r.farm==='astana onim'));
+  const bmW=byWeek(DB.filter(r=>r.farm==='burabay milk'));
+  const uW=[...new Set([...aoW,...bmW].map(w=>w.week))].sort((a,b)=>a-b);
+  let cap=0,caf=0,cbp=0,cbf=0,c1=[],c2=[],c3=[],c4=[],cL=[];
+  for(const wn of uW){
+    const aw=aoW.find(w=>w.week===wn)||{pp:0,fp:0};
+    const bw=bmW.find(w=>w.week===wn)||{pp:0,fp:0};
+    cap+=aw.pp;caf+=aw.fp;cbp+=bw.pp;cbf+=bw.fp;
+    c1.push(cap);c2.push(caf);c3.push(cbp);c4.push(cbf);cL.push('Н'+wn);
+  }
+  mkChart('c-cum-proc','line',cL,[
+    {label:'AO план',data:c1,borderColor:'#93c5fd',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1},
+    {label:'AO факт',data:c2,borderColor:'#2563eb',borderWidth:2,fill:false,tension:0.4,pointRadius:2},
+    {label:'BM план',data:c3,borderColor:'#c4b5fd',borderWidth:1.5,borderDash:[5,4],fill:false,tension:0.4,pointRadius:1},
+    {label:'BM факт',data:c4,borderColor:'#7c3aed',borderWidth:2,fill:false,tension:0.4,pointRadius:2}
+  ]);
+
+  // МоМ по фермам
+  const aoMo=byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='astana onim'));
+  const bmMo=byMonth(DB.filter(r=>(currentMonth==='all'||r.month===currentMonth)&&r.farm==='burabay milk'));
+  mkChart('c-ao-mom','bar',aoMo.map(m=>m.name.slice(0,3)),[
+    {label:'AO',data:aoMo.map(m=>m.fp),backgroundColor:aoMo.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:aoMo.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
+  ]);
+  mkChart('c-bm-mom','bar',bmMo.map(m=>m.name.slice(0,3)),[
+    {label:'BM',data:bmMo.map(m=>m.fp),backgroundColor:bmMo.map((_,i)=>CLRS[i%CLRS.length]+'28'),borderColor:bmMo.map((_,i)=>CLRS[i%CLRS.length]),borderWidth:1.5,borderRadius:5}
+  ]);
+}
+
+// ── НАВИГАЦИЯ ─────────────────────────────────────────
+function showPage(p,btn){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(btn)btn.classList.add('active');
+  setTimeout(renderCharts,60);
+}
+function buildMonthBtns(){
+  const MO=['янв.','февр.','мар.','апр.','май','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
+  const found=[...new Set(DB.filter(r=>r.month).map(r=>r.month))].sort((a,b)=>MO.indexOf(a)-MO.indexOf(b));
+  const container=document.getElementById('month-btns');
+  if(!container)return;
+  container.innerHTML=found.map(m=>`<button class="f-btn" onclick="setMonth('${m}',this)">${MN[m]||m}</button>`).join('');
+}
+function setMonth(m,btn){
+  currentMonth=m;
+  document.querySelectorAll('.filters .f-btn').forEach(b=>b.classList.remove('active'));
+  // Активируем кнопку Весь год
+  const allBtn=document.querySelector('.filters .f-btn');
+  if(m==='all'&&allBtn)allBtn.classList.add('active');
+  if(btn)btn.classList.add('active');
+  renderAll();
+}
+function setFarm(f,btn){
+  currentFarm=f;
+  ['fb-all','fb-ao','fb-bm'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
+  btn.classList.add('active');
+  renderAll();
+}
+function renderAll(){
+  renderKPI();
+  renderFarmCards();
+  renderTables();
+  setTimeout(renderCharts,60);
+}
+
+// ── КОНВЕРТАЦИЯ СТАТИЧНЫХ ДАННЫХ ─────────────────────
+function staticToDb(rows) {
+  return rows.map(r => ({
+    month:     r.mo,
+    week:      r.wk,
+    weekLabel: r.wl,
+    farm:      r.f,
+    isPlan:    r.p === 1,
+    isFact:    r.p === 0,
+    milk:      r.ml || 0,
+    herd:      r.h  || 0,
+    dairy:     r.d  || 0,
+    proc:      r.pr || 0,
+  }));
+}
+
+// ── ЗАГРУЗКА ──────────────────────────────────────────
+async function loadData(){
+  // 1. Сразу показываем встроенные данные
+  DB = staticToDb(STATIC_DB);
+  buildMonthBtns();
+  renderAll();
+  updateDebug('static');
+
+  // 2. Пробуем загрузить свежие данные с Google Sheets
+  setStatus('loading');
+  try{
+    const res  = await fetch(SCRIPT_URL);
+    const json = await res.json();
+    const rawData = Array.isArray(json) ? json : (json.data || json.rows || []);
+    const fresh = parseSheet(rawData);
+    if(fresh.length > 10) {
+      DB = fresh;
+      buildMonthBtns();
+      renderAll();
+      updateDebug('live', fresh.length);
+    }
+    setStatus('ok');
+  } catch(e){
+    console.error('Google Sheets недоступен, используются встроенные данные:', e);
+    setStatus('static');
+  }
+}
+
+function updateDebug(src, rows) {
+  const dbg = document.getElementById('dbg');
+  if(!dbg) return;
+  const months = [...new Set(DB.map(r=>r.month))].filter(Boolean);
+  const mo = months.join(', ');
+  if(src === 'static') {
+    dbg.innerHTML = '📋 <b>Встроенные данные:</b> '+DB.length+' строк | месяцы: '+mo+' | <i>Обновляю с Google Sheets...</i>';
+    dbg.style.background = '#fff3cd';
+  } else {
+    dbg.innerHTML = '✅ <b>Данные обновлены с Google Sheets:</b> '+rows+' строк | месяцы: '+mo;
+    dbg.style.background = '#d1fae5';
+    setTimeout(()=>{ if(dbg) dbg.style.display='none'; }, 4000);
+  }
+}
+
+setInterval(loadData, 5*60*1000);
+loadData().finally(()=>{ document.getElementById('loading').classList.add('hidden'); });
+</script>
+</body>
+</html>
