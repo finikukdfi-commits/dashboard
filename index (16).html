@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AGROINOVATION Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --green:  #1a6b3a;
+      --green2: #2ecc71;
+      --amber:  #f39c12;
+      --blue:   #3498db;
+      --purple: #9b59b6;
+      --teal:   #1abc9c;
+      --red:    #e74c3c;
+      --dark:   #1a2332;
+      --bg:     #f0f4f8;
+    }
+    * { box-sizing: border-box; }
+    body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, var(--dark) 0%, #2c3e50 100%);
+      color: #fff;
+      padding: 0.85rem 1.25rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.35);
+      position: sticky; top: 0; z-index: 200;
+    }
+    .logo-wrap { line-height: 1.2; }
+    .logo-main { font-size: 1.25rem; font-weight: 700; letter-spacing: .4px; }
+    .logo-sub  { font-size: .72rem; opacity: .65; letter-spacing: 1px; text-transform: uppercase; }
+
+    .co-btn {
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 20px;
+      padding: .3rem .9rem;
+      font-size: .82rem;
+      cursor: pointer;
+      transition: all .18s;
+      white-space: nowrap;
+    }
+    .co-btn.active { background: var(--green); border-color: var(--green2); }
+    .co-btn:hover:not(.active) { background: rgba(255,255,255,.18); }
+
+    .sel-dark {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff;
+      border-radius: 8px;
+      padding: .3rem .7rem;
+      font-size: .82rem;
+    }
+    .sel-dark option { background: #2c3e50; }
+
+    /* ── TABS ── */
+    .tab-bar {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 0 1rem;
+      position: sticky; top: 58px; z-index: 100;
+      overflow-x: auto; white-space: nowrap;
+    }
+    .tab-bar .nav { flex-wrap: nowrap; }
+    .tab-bar .nav-link {
+      color: #666; border: none; padding: .65rem 1.2rem;
+      font-weight: 500; border-bottom: 3px solid transparent;
+      font-size: .9rem; white-space: nowrap;
+    }
+    .tab-bar .nav-link.active { color: var(--green); border-bottom-color: var(--green); background: none; }
+    .tab-bar .nav-link:hover:not(.active) { color: var(--green); border-bottom-color: rgba(26,107,58,.3); }
+
+    /* ── CARDS ── */
+    .kpi-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.1rem 1.2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      border-left: 4px solid var(--green);
+      height: 100%;
+    }
+    .kpi-card.amber  { border-left-color: var(--amber);  }
+    .kpi-card.blue   { border-left-color: var(--blue);   }
+    .kpi-card.purple { border-left-color: var(--purple); }
+    .kpi-card.red    { border-left-color: var(--red);    }
+    .kpi-card.teal   { border-left-color: var(--teal);   }
+
+    .kpi-label { font-size: .74rem; color: #999; text-transform: uppercase; letter-spacing: .5px; margin-bottom: .15rem; }
+    .kpi-val   { font-size: 1.75rem; font-weight: 700; color: var(--dark); line-height: 1; }
+    .kpi-unit  { font-size: .78rem; color: #bbb; margin-top: .15rem; }
+    .kpi-pf    { display: flex; flex-wrap: wrap; gap: 5px; margin-top: .45rem; }
+
+    .badge-fact { font-size: .72rem; background: #e8f5e9; color: #2e7d32; padding: 2px 7px; border-radius: 4px; }
+    .badge-plan { font-size: .72rem; background: #e3f2fd; color: #1565c0; padding: 2px 7px; border-radius: 4px; }
+    .badge-pct  { font-size: .72rem; padding: 2px 7px; border-radius: 4px; }
+    .badge-pct.g { background: #e8f5e9; color: #2e7d32; }
+    .badge-pct.w { background: #fff3e0; color: #e65100; }
+    .badge-pct.b { background: #ffebee; color: #c62828; }
+
+    /* ── CHART CARD ── */
+    .cc {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.1rem 1.2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      height: 100%;
+    }
+    .cc-title {
+      font-size: .88rem; font-weight: 600; color: #444;
+      margin-bottom: .9rem;
+      display: flex; align-items: center; gap: .4rem;
+    }
+
+    /* ── TABLE ── */
+    .dt { font-size: .83rem; }
+    .dt th { background: #f8f9fa; font-weight: 600; color: #555; font-size: .78rem; text-transform: uppercase; letter-spacing: .3px; }
+    .dt tfoot td { font-weight: 700; background: #f8f9fa; }
+
+    /* ── PLACEHOLDER ── */
+    .ph {
+      background: #fff;
+      border-radius: 12px;
+      padding: 2.5rem;
+      text-align: center;
+      color: #ccc;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      border: 2px dashed #e8e8e8;
+    }
+    .ph i { font-size: 2.5rem; margin-bottom: .5rem; display: block; }
+
+    /* ── LOADING ── */
+    #overlay {
+      position: fixed; inset: 0;
+      background: rgba(26,35,50,.88);
+      z-index: 9999;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: #fff;
+    }
+
+    /* ── MISC ── */
+    .content { max-width: 1600px; margin: 0 auto; padding: 1rem; }
+    .section-lbl { font-size: .8rem; opacity: .5; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; }
+    @media (max-width:576px) { .kpi-val { font-size: 1.35rem; } }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOADING ═══════════════════ -->
+<div id="overlay">
+  <div class="spinner-border mb-3" style="width:3rem;height:3rem;color:#2ecc71;"></div>
+  <div style="font-size:1.05rem;font-weight:500;">Загрузка данных…</div>
+  <div style="font-size:.8rem;opacity:.6;margin-top:.4rem;">AGROINOVATION Analytics</div>
+</div>
+
+<!-- ═══════════════════ HEADER ═══════════════════ -->
+<div class="header">
+  <div class="d-flex flex-wrap align-items-center gap-2 gap-md-3">
+
+    <!-- Logo -->
+    <div class="logo-wrap me-1">
+      <div class="logo-main"><i class="bi bi-tree-fill text-success me-2"></i>AGROINOVATION</div>
+      <div class="logo-sub">Управленческий дашборд · ТОО</div>
+    </div>
+
+    <div class="vr opacity-25 d-none d-lg-block" style="height:36px;"></div>
+
+    <!-- Company switcher -->
+    <div class="d-flex gap-2">
+      <button class="co-btn active" id="btn-all"    onclick="setCompany('all')">Консолидировано</button>
+      <button class="co-btn"        id="btn-astana" onclick="setCompany('astana')">Astana Onim</button>
+      <button class="co-btn"        id="btn-burabay"onclick="setCompany('burabay')">Burabay Milk</button>
+    </div>
+
+    <div class="ms-auto d-flex align-items-center gap-3 flex-wrap">
+      <!-- Month -->
+      <select class="sel-dark" id="selMonth" onchange="updateDashboard()">
+        <option value="">Все месяцы</option>
+        <option>Январь</option><option>Февраль</option><option>Март</option>
+        <option>Апрель</option><option>Май</option><option>Июнь</option>
+        <option>Июль</option><option>Август</option><option>Сентябрь</option>
+        <option>Октябрь</option><option>Ноябрь</option><option>Декабрь</option>
+      </select>
+      <!-- YTD -->
+      <div class="d-flex align-items-center gap-2" style="font-size:.82rem;color:#fff;">
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input" type="checkbox" id="chkYTD" onchange="updateDashboard()"
+                 style="cursor:pointer;">
+          <label class="form-check-label" for="chkYTD">YTD</label>
+        </div>
+      </div>
+      <!-- Timestamp -->
+      <div style="font-size:.72rem;opacity:.55;" id="tsLabel"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB BAR ═══════════════════ -->
+<div class="tab-bar">
+  <ul class="nav nav-tabs border-0">
+    <li class="nav-item"><a class="nav-link active" href="#" onclick="showTab('prod',this);return false;"><i class="bi bi-house-fill me-1"></i>Производство</a></li>
+    <li class="nav-item"><a class="nav-link" href="#" onclick="showTab('proc',this);return false;"><i class="bi bi-gear-fill me-1"></i>Переработка</a></li>
+    <li class="nav-item"><a class="nav-link" href="#" onclick="showTab('crop',this);return false;"><i class="bi bi-flower1 me-1"></i>Растениеводство</a></li>
+    <li class="nav-item"><a class="nav-link" href="#" onclick="showTab('fin',this);return false;"><i class="bi bi-bar-chart-fill me-1"></i>Финансы</a></li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ CONTENT ═══════════════════ -->
+<div class="content">
+
+  <!-- ══════════ TAB: ПРОИЗВОДСТВО ══════════ -->
+  <div id="tp-prod" class="tab-pane">
+
+    <!-- KPI row 1 — livestock -->
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-4 col-xl-2"><div class="kpi-card"><div class="kpi-label"><i class="bi bi-droplet-fill"></i> Валовый надой</div><div class="kpi-val" id="k-yield">—</div><div class="kpi-unit">литров</div><div class="kpi-pf"><span class="badge-fact" id="k-yield-f">—</span><span class="badge-plan" id="k-yield-p">—</span><span class="badge-pct" id="k-yield-pct">—</span></div></div></div>
+      <div class="col-6 col-md-4 col-xl-2"><div class="kpi-card amber"><div class="kpi-label"><i class="bi bi-calendar-day"></i> Надой в сутки</div><div class="kpi-val" id="k-daily">—</div><div class="kpi-unit">л/день</div><div class="kpi-pf"><span class="badge-fact" id="k-daily-f">—</span><span class="badge-plan" id="k-daily-p">—</span></div></div></div>
+      <div class="col-6 col-md-4 col-xl-2"><div class="kpi-card blue"><div class="kpi-label"><i class="bi bi-graph-up"></i> Надой / голову</div><div class="kpi-val" id="k-per">—</div><div class="kpi-unit">л/гол</div><div class="kpi-pf"><span class="badge-fact" id="k-per-f">—</span><span class="badge-plan" id="k-per-p">—</span></div></div></div>
+      <div class="col-6 col-md-4 col-xl-2"><div class="kpi-card purple"><div class="kpi-label"><i class="bi bi-people-fill"></i> Общее поголовье</div><div class="kpi-val" id="k-head">—</div><div class="kpi-unit">голов</div><div class="kpi-pf"><span class="badge-fact" id="k-head-f">—</span><span class="badge-plan" id="k-head-p">—</span></div></div></div>
+      <div class="col-6 col-md-4 col-xl-2"><div class="kpi-card teal"><div class="kpi-label"><i class="bi bi-heart-fill"></i> Дойное стадо</div><div class="kpi-val" id="k-milk">—</div><div class="kpi-unit">голов</div><div class="kpi-pf"><span class="badge-fact" id="k-milk-f">—</span><span class="badge-plan" id="k-milk-p">—</span></div></div></div>
+      <div class="col-6 col-md-4 col-xl-2"><div class="kpi-card red"><div class="kpi-label"><i class="bi bi-plus-circle-fill"></i> Приплод</div><div class="kpi-val" id="k-born">—</div><div class="kpi-unit">голов</div><div class="kpi-pf"><span class="badge-fact" id="k-born-f">—</span><span class="badge-plan" id="k-born-p">—</span></div></div></div>
+    </div>
+
+    <!-- KPI row 2 — quality -->
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-3"><div class="kpi-card"><div class="kpi-label"><i class="bi bi-droplet-half"></i> Жирность молока</div><div class="kpi-val" id="k-fat">—</div><div class="kpi-unit">%</div></div></div>
+      <div class="col-6 col-md-3"><div class="kpi-card amber"><div class="kpi-label"><i class="bi bi-thermometer"></i> Кислотность</div><div class="kpi-val" id="k-acid">—</div><div class="kpi-unit">°Т</div></div></div>
+      <div class="col-6 col-md-3"><div class="kpi-card blue"><div class="kpi-label"><i class="bi bi-arrow-right-circle-fill"></i> На переработку</div><div class="kpi-val" id="k-proc">—</div><div class="kpi-unit">литров</div></div></div>
+      <div class="col-6 col-md-3"><div class="kpi-card teal"><div class="kpi-label"><i class="bi bi-percent"></i> Выход на переработку</div><div class="kpi-val" id="k-procpct">—</div><div class="kpi-unit">% от надоя</div></div></div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-3">
+      <div class="col-12 col-xl-8">
+        <div class="cc">
+          <div class="cc-title"><i class="bi bi-graph-up-arrow text-success"></i>Суточный надой — План vs Факт</div>
+          <canvas id="cYield"></canvas>
+        </div>
+      </div>
+      <div class="col-12 col-xl-4">
+        <div class="cc">
+          <div class="cc-title"><i class="bi bi-pie-chart-fill text-primary"></i>Структура стада</div>
+          <canvas id="cHerd"></canvas>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="cc">
+          <div class="cc-title"><i class="bi bi-activity text-warning"></i>Динамика жирности молока (%)</div>
+          <canvas id="cFat"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB: ПЕРЕРАБОТКА ══════════ -->
+  <div id="tp-proc" class="tab-pane d-none">
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-3"><div class="kpi-card"><div class="kpi-label"><i class="bi bi-arrow-right-circle-fill"></i> Принято на переработку</div><div class="kpi-val" id="k-pr-in">—</div><div class="kpi-unit">литров</div></div></div>
+      <div class="col-6 col-md-3"><div class="kpi-card amber"><div class="kpi-label"><i class="bi bi-box-seam-fill"></i> Произведено ГП</div><div class="kpi-val" id="k-pr-made">—</div><div class="kpi-unit">кг</div></div></div>
+      <div class="col-6 col-md-3"><div class="kpi-card blue"><div class="kpi-label"><i class="bi bi-cart-check-fill"></i> Реализовано ГП</div><div class="kpi-val" id="k-pr-sold">—</div><div class="kpi-unit">кг</div></div></div>
+      <div class="col-6 col-md-3"><div class="kpi-card teal"><div class="kpi-label"><i class="bi bi-percent"></i> % реализации</div><div class="kpi-val" id="k-pr-pct">—</div><div class="kpi-unit">от произведённого</div></div></div>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-12 col-lg-7">
+        <div class="cc">
+          <div class="cc-title"><i class="bi bi-bar-chart-fill text-success"></i>Производство по видам (кг)</div>
+          <canvas id="cProd"></canvas>
+        </div>
+      </div>
+      <div class="col-12 col-lg-5">
+        <div class="cc">
+          <div class="cc-title"><i class="bi bi-pie-chart-fill text-primary"></i>Структура выручки по продуктам</div>
+          <canvas id="cRevPie"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="cc">
+      <div class="cc-title"><i class="bi bi-table text-secondary"></i>Детализация по видам продукции</div>
+      <div class="table-responsive">
+        <table class="table dt table-hover mb-0">
+          <thead><tr>
+            <th>Продукция</th>
+            <th class="text-end">Произведено (кг)</th>
+            <th class="text-end">Реализовано (кг)</th>
+            <th class="text-end">Выручка (тг)</th>
+            <th class="text-end">Ср. цена (тг/кг)</th>
+            <th class="text-end">Доля выручки</th>
+          </tr></thead>
+          <tbody id="tbProd"></tbody>
+          <tfoot id="tfProd"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB: РАСТЕНИЕВОДСТВО ══════════ -->
+  <div id="tp-crop" class="tab-pane d-none">
+    <div class="alert alert-info d-flex gap-2 align-items-center mb-3">
+      <i class="bi bi-info-circle-fill fs-5"></i>
+      <div><strong>Раздел в разработке.</strong> Добавьте данные по растениеводству в лист БД — блоки активируются автоматически.</div>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-3"><div class="ph"><i class="bi bi-grid-3x3-gap"></i><div class="fw-bold">Площади посева</div><small>га</small></div></div>
+      <div class="col-6 col-md-3"><div class="ph"><i class="bi bi-graph-up"></i><div class="fw-bold">Урожайность</div><small>ц/га</small></div></div>
+      <div class="col-6 col-md-3"><div class="ph"><i class="bi bi-box-seam"></i><div class="fw-bold">Валовый сбор</div><small>тонн</small></div></div>
+      <div class="col-6 col-md-3"><div class="ph"><i class="bi bi-cash-stack"></i><div class="fw-bold">Выручка</div><small>тенге</small></div></div>
+    </div>
+    <div class="row g-3">
+      <div class="col-12 col-md-6"><div class="ph" style="min-height:220px;"><i class="bi bi-pie-chart-fill"></i><div class="fw-bold">Структура посевных площадей</div><small>Зерновые / Кормовые / Технические</small></div></div>
+      <div class="col-12 col-md-6"><div class="ph" style="min-height:220px;"><i class="bi bi-bar-chart-fill"></i><div class="fw-bold">Урожайность по культурам</div><small>Пшеница / Ячмень / Кукуруза / Рапс</small></div></div>
+      <div class="col-12"><div class="ph" style="min-height:160px;"><i class="bi bi-calendar3"></i><div class="fw-bold">Агрокалендарь — Посев / Уход / Уборка</div></div></div>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB: ФИНАНСЫ ══════════ -->
+  <div id="tp-fin" class="tab-pane d-none">
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-3"><div class="kpi-card"><div class="kpi-label"><i class="bi bi-cash-stack"></i> Общая выручка</div><div class="kpi-val" id="k-rev">—</div><div class="kpi-unit">тенге</div></div></div>
+      <div class="col-6 col-md-3"><div class="kpi-card amber"><div class="kpi-label"><i class="bi bi-calculator"></i> Ср. цена реализации</div><div class="kpi-val" id="k-avgprice">—</div><div class="kpi-unit">тг / кг</div></div></div>
+      <div class="col-6 col-md-3"><div class="kpi-card blue"><div class="kpi-label"><i class="bi bi-lightning-fill"></i> Выручка / литр молока</div><div class="kpi-val" id="k-revliter">—</div><div class="kpi-unit">тг / л</div></div></div>
+      <div class="col-6 col-md-3"><div class="kpi-card teal"><div class="kpi-label"><i class="bi bi-people-fill"></i> Произв. труда</div><div class="kpi-val" id="k-labor">—</div><div class="kpi-unit">кг / сотрудника</div></div></div>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-12 col-lg-8">
+        <div class="cc">
+          <div class="cc-title"><i class="bi bi-bar-chart-fill text-success"></i>Выручка по месяцам — План vs Факт</div>
+          <canvas id="cRevMonth"></canvas>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <div class="cc">
+          <div class="cc-title"><i class="bi bi-pie-chart-fill text-primary"></i>Структура выручки</div>
+          <canvas id="cRevDonut"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="cc">
+      <div class="cc-title"><i class="bi bi-table text-secondary"></i>Выручка по видам продукции</div>
+      <div class="table-responsive">
+        <table class="table dt table-hover mb-0">
+          <thead><tr>
+            <th>Продукция</th>
+            <th class="text-end">Реализовано (кг)</th>
+            <th class="text-end">Выручка (тг)</th>
+            <th class="text-end">Ср. цена (тг/кг)</th>
+            <th class="text-end">Доля</th>
+          </tr></thead>
+          <tbody id="tbFin"></tbody>
+          <tfoot id="tfFin"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════
+   COLUMN MAP  (0-based, data rows after header)
+═══════════════════════════════════════════════════ */
+var C = {
+  DATE:0, SDATE:1, WEEK:2, MONTH:3, FARM:4, TYPE:5,
+  YIELD:6, THEAD:7, BORN:8, MILK:9, YPER:10, FAT:11, ACID:12,
+  TOPROC:13,
+  PTOT:14, PMILK:15, PFERM:16, PBUT:17, PCOTT:18, PCHZ:19, PNAT:20, PRAW:21, PCRM:22,
+  SKGTOT:23, SKMILK:24, SKFERM:25, SKBUT:26, SKCOTT:27, SKCHZ:28, SKNAT:29, SKRAW:30, SKCRM:31,
+  RTOT:32, RMILK:33, RFERM:34, RBUT:35, RCOTT:36, RCHZ:37, RNAT:38, RRAW:39, RCRM:40
+};
+
+var MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+              'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+var PRODS = [
+  {key:'MILK', label:'Молоко',         color:'#3498db'},
+  {key:'FERM', label:'Кисломолочная',  color:'#2ecc71'},
+  {key:'BUT',  label:'Масло',          color:'#f39c12'},
+  {key:'COTT', label:'Творог',         color:'#e74c3c'},
+  {key:'CHZ',  label:'Сыры',           color:'#9b59b6'},
+  {key:'NAT',  label:'Нац. продукт',   color:'#1abc9c'},
+  {key:'RAW',  label:'Молоко сырое',   color:'#34495e'},
+  {key:'CRM',  label:'Сливки',         color:'#e67e22'}
+];
+
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+var DATA = [];
+var CHARTS = {};
+var company = 'all';
+
+/* ═══════════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+  google.script.run
+    .withSuccessHandler(onLoad)
+    .withFailureHandler(onErr)
+    .getSheetData();
+});
+
+function onLoad(res) {
+  document.getElementById('overlay').style.display = 'none';
+  if (!res || !res.success) { showErr(res ? res.error : 'Нет данных'); return; }
+  DATA = res.data.slice(1).filter(function(r){ return r[C.DATE] && r[C.FARM]; });
+  document.getElementById('tsLabel').textContent =
+    'Обновлено: ' + new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  initCharts();
+  updateDashboard();
+}
+
+function onErr(e) {
+  document.getElementById('overlay').style.display = 'none';
+  showErr(e.message || 'Ошибка');
+}
+
+function showErr(msg) {
+  document.querySelector('.content').innerHTML =
+    '<div class="alert alert-danger d-flex gap-2 align-items-center mt-3">'+
+    '<i class="bi bi-exclamation-triangle-fill fs-4"></i>'+
+    '<div><strong>Ошибка загрузки:</strong> '+msg+'</div></div>';
+}
+
+/* ═══════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════ */
+function showTab(name, el) {
+  document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.add('d-none'); });
+  document.querySelectorAll('.tab-bar .nav-link').forEach(function(l){ l.classList.remove('active'); });
+  document.getElementById('tp-'+name).classList.remove('d-none');
+  el.classList.add('active');
+  setTimeout(function(){ Object.values(CHARTS).forEach(function(c){ if(c) c.resize(); }); }, 60);
+}
+
+function setCompany(c) {
+  company = c;
+  ['all','astana','burabay'].forEach(function(x){
+    document.getElementById('btn-'+x).classList.toggle('active', x===c);
+  });
+  updateDashboard();
+}
+
+/* ═══════════════════════════════════════════════════
+   FILTER
+═══════════════════════════════════════════════════ */
+function filter(type) {
+  var month = document.getElementById('selMonth').value;
+  var ytd   = document.getElementById('chkYTD').checked;
+  var mIdx  = MONTHS.indexOf(month);
+  return DATA.filter(function(r) {
+    var farm = String(r[C.FARM]).toLowerCase();
+    if (company==='astana'  && !farm.includes('astana'))  return false;
+    if (company==='burabay' && !farm.includes('burabay')) return false;
+    if (type) {
+      var t = String(r[C.TYPE]).toLowerCase();
+      if (type==='fact' && !t.includes('факт')) return false;
+      if (type==='plan' && !t.includes('план')) return false;
+    }
+    if (month) {
+      var rm = String(r[C.MONTH]).trim();
+      var ri = MONTHS.indexOf(rm);
+      if (ytd) { if(ri<0||ri>mIdx) return false; }
+      else      { if(rm!==month)    return false; }
+    }
+    return true;
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   MATH HELPERS
+═══════════════════════════════════════════════════ */
+function S(rows, col) { return rows.reduce(function(a,r){ return a+(+r[col]||0); },0); }
+function AVG(rows, col) {
+  var v = rows.filter(function(r){ return +r[col]>0; });
+  if(!v.length) return 0;
+  return v.reduce(function(a,r){ return a+(+r[col]); },0)/v.length;
+}
+
+/* ═══════════════════════════════════════════════════
+   FORMAT HELPERS
+═══════════════════════════════════════════════════ */
+function fmt(n, d) {
+  d = d||0;
+  if(n===null||n===undefined||isNaN(n)) return '—';
+  return Number(n).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+}
+function fmtM(n) {
+  if(!n) return '0';
+  if(n>=1e9) return fmt(n/1e9,1)+' млрд';
+  if(n>=1e6) return fmt(n/1e6,1)+' млн';
+  if(n>=1e3) return fmt(n/1e3,0)+' тыс';
+  return fmt(n);
+}
+function dot(id, cls) {
+  return '<span style="display:inline-block;width:10px;height:10px;background:'+
+    (PRODS.find(function(p){return p.key===id;})||{color:'#999'}).color+
+    ';border-radius:2px;margin-right:6px;"></span>';
+}
+function progBar(pct, color) {
+  return '<div class="progress d-inline-flex" style="width:55px;height:5px;vertical-align:middle;">'+
+    '<div class="progress-bar" style="width:'+Math.min(pct,100)+'%;background:'+color+';"></div></div>';
+}
+
+function setPct(id, fact, plan) {
+  var el = document.getElementById(id);
+  if(!el) return;
+  if(!plan){ el.textContent='—'; el.className='badge-pct'; return; }
+  var p = Math.round(fact/plan*100);
+  el.textContent = p+'%';
+  el.className = 'badge-pct '+(p>=95?'g':p>=80?'w':'b');
+}
+function setKpi(id, val)  { var e=document.getElementById(id); if(e) e.textContent=val; }
+
+/* ═══════════════════════════════════════════════════
+   MAIN UPDATE
+═══════════════════════════════════════════════════ */
+function updateDashboard() {
+  var F = filter('fact'), P = filter('plan');
+  updProd(F, P);
+  updProc(F);
+  updFin(F);
+  updCharts(F, P);
+}
+
+/* ─── TAB 1: ПРОИЗВОДСТВО ─── */
+function updProd(F, P) {
+  var yf = S(F,C.YIELD), yp = S(P,C.YIELD);
+  var days = (function(){var s={}; F.forEach(function(r){s[r[C.DATE]]=1;}); return Math.max(Object.keys(s).length,1);})();
+
+  setKpi('k-yield',  fmtM(yf));
+  setKpi('k-yield-f','Факт: '+fmtM(yf));
+  setKpi('k-yield-p','План: '+fmtM(yp));
+  setPct('k-yield-pct', yf, yp);
+
+  var df = yf/days, dp = yp/days;
+  setKpi('k-daily',  fmt(df)); setKpi('k-daily-f','Факт: '+fmt(df)); setKpi('k-daily-p','План: '+fmt(dp));
+
+  var pf = AVG(F,C.YPER), pp = AVG(P,C.YPER);
+  setKpi('k-per',  fmt(pf,1)); setKpi('k-per-f','Факт: '+fmt(pf,1)); setKpi('k-per-p','План: '+fmt(pp,1));
+
+  // Livestock — last available row
+  var lF = F.length?F[F.length-1]:null, lP = P.length?P[P.length-1]:null;
+  var hf=lF?(+lF[C.THEAD]||0):0, hp=lP?(+lP[C.THEAD]||0):0;
+  setKpi('k-head',  fmt(hf)); setKpi('k-head-f','Факт: '+fmt(hf)); setKpi('k-head-p','План: '+fmt(hp));
+
+  var mf=lF?(+lF[C.MILK]||0):0, mp=lP?(+lP[C.MILK]||0):0;
+  setKpi('k-milk',  fmt(mf)); setKpi('k-milk-f','Факт: '+fmt(mf)); setKpi('k-milk-p','План: '+fmt(mp));
+
+  var bf=S(F,C.BORN), bp=S(P,C.BORN);
+  setKpi('k-born',  fmt(bf)); setKpi('k-born-f','Факт: '+fmt(bf)); setKpi('k-born-p','План: '+fmt(bp));
+
+  setKpi('k-fat',  fmt(AVG(F,C.FAT),2));
+  setKpi('k-acid', fmt(AVG(F,C.ACID),1));
+
+  var tp = S(F,C.TOPROC);
+  setKpi('k-proc',    fmtM(tp));
+  setKpi('k-procpct', yf>0?fmt(tp/yf*100,1):'—');
+}
+
+/* ─── TAB 2: ПЕРЕРАБОТКА ─── */
+function updProc(F) {
+  var rcv  = S(F,C.TOPROC);
+  var made = S(F,C.PTOT);
+  var sold = S(F,C.SKGTOT);
+  setKpi('k-pr-in',   fmtM(rcv));
+  setKpi('k-pr-made', fmtM(made));
+  setKpi('k-pr-sold', fmtM(sold));
+  setKpi('k-pr-pct',  made>0?fmt(sold/made*100,1)+'%':'—');
+
+  var totRev = S(F,C.RTOT);
+  var tbody='', tfoot='', totMade=0, totSold=0, totR=0;
+
+  PRODS.forEach(function(p){
+    var m=S(F,C['P'+p.key]), s=S(F,C['SK'+p.key]), r=S(F,C['R'+p.key]);
+    if(!m&&!s&&!r) return;
+    totMade+=m; totSold+=s; totR+=r;
+    var ap=s>0?r/s:0, sh=totRev>0?r/totRev*100:0;
+    tbody+='<tr>'+
+      '<td><span style="display:inline-block;width:10px;height:10px;background:'+p.color+
+      ';border-radius:2px;margin-right:6px;"></span>'+p.label+'</td>'+
+      '<td class="text-end">'+fmtM(m)+'</td>'+
+      '<td class="text-end">'+fmtM(s)+'</td>'+
+      '<td class="text-end">'+fmtM(r)+'</td>'+
+      '<td class="text-end">'+fmt(ap)+'</td>'+
+      '<td class="text-end d-flex align-items-center justify-content-end gap-2">'+
+        progBar(sh,p.color)+' '+fmt(sh,1)+'%</td></tr>';
+  });
+
+  var ta = totSold>0?totR/totSold:0;
+  tfoot='<tr><td><strong>ИТОГО</strong></td>'+
+    '<td class="text-end"><strong>'+fmtM(totMade)+'</strong></td>'+
+    '<td class="text-end"><strong>'+fmtM(totSold)+'</strong></td>'+
+    '<td class="text-end"><strong>'+fmtM(totR)+'</strong></td>'+
+    '<td class="text-end"><strong>'+fmt(ta)+'</strong></td>'+
+    '<td class="text-end"><strong>100%</strong></td></tr>';
+
+  document.getElementById('tbProd').innerHTML = tbody;
+  document.getElementById('tfProd').innerHTML = tfoot;
+}
+
+/* ─── TAB 4: ФИНАНСЫ ─── */
+function updFin(F) {
+  var rev  = S(F,C.RTOT);
+  var sold = S(F,C.SKGTOT);
+  var yld  = S(F,C.YIELD);
+  setKpi('k-rev',      fmtM(rev));
+  setKpi('k-avgprice', sold>0?fmt(rev/sold):'—');
+  setKpi('k-revliter', yld>0?fmt(rev/yld):'—');
+  setKpi('k-labor',    '—'); // requires employee count column
+
+  var totRev = rev;
+  var tbody='', tfoot='', ts=0, tr=0;
+  PRODS.forEach(function(p){
+    var s=S(F,C['SK'+p.key]), r=S(F,C['R'+p.key]);
+    if(!s&&!r) return;
+    ts+=s; tr+=r;
+    var ap=s>0?r/s:0, sh=totRev>0?r/totRev*100:0;
+    tbody+='<tr>'+
+      '<td><span style="display:inline-block;width:10px;height:10px;background:'+p.color+
+      ';border-radius:2px;margin-right:6px;"></span>'+p.label+'</td>'+
+      '<td class="text-end">'+fmtM(s)+'</td>'+
+      '<td class="text-end">'+fmtM(r)+'</td>'+
+      '<td class="text-end">'+fmt(ap)+'</td>'+
+      '<td class="text-end d-flex align-items-center justify-content-end gap-2">'+
+        progBar(sh,p.color)+' '+fmt(sh,1)+'%</td></tr>';
+  });
+  tfoot='<tr><td><strong>ИТОГО</strong></td>'+
+    '<td class="text-end"><strong>'+fmtM(ts)+'</strong></td>'+
+    '<td class="text-end"><strong>'+fmtM(tr)+'</strong></td>'+
+    '<td class="text-end"><strong>'+fmt(ts>0?tr/ts:0)+'</strong></td>'+
+    '<td class="text-end"><strong>100%</strong></td></tr>';
+  document.getElementById('tbFin').innerHTML = tbody;
+  document.getElementById('tfFin').innerHTML = tfoot;
+}
+
+/* ═══════════════════════════════════════════════════
+   CHARTS INIT
+═══════════════════════════════════════════════════ */
+function initCharts() {
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+  Chart.defaults.color = '#666';
+
+  var lineOpts = function(label) { return {
+    responsive:true, maintainAspectRatio:true,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top'}},
+    scales:{ y:{grid:{color:'#f0f0f0'}}, x:{grid:{display:false}} }
+  };};
+
+  CHARTS.yield = new Chart(document.getElementById('cYield'),{
+    type:'line', data:{labels:[],datasets:[]}, options:lineOpts()
+  });
+  CHARTS.herd = new Chart(document.getElementById('cHerd'),{
+    type:'doughnut', data:{labels:[],datasets:[]},
+    options:{responsive:true,plugins:{legend:{position:'bottom'}},cutout:'62%'}
+  });
+  CHARTS.fat = new Chart(document.getElementById('cFat'),{
+    type:'line', data:{labels:[],datasets:[]},
+    options:{responsive:true,maintainAspectRatio:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'top'}},
+      scales:{y:{grid:{color:'#f0f0f0'},min:3.0,max:4.5},x:{grid:{display:false}}}}
+  });
+  CHARTS.prod = new Chart(document.getElementById('cProd'),{
+    type:'bar', data:{labels:[],datasets:[]},
+    options:{responsive:true,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false}},y:{grid:{color:'#f0f0f0'}}}}
+  });
+  CHARTS.revPie = new Chart(document.getElementById('cRevPie'),{
+    type:'doughnut', data:{labels:[],datasets:[]},
+    options:{responsive:true,plugins:{legend:{position:'bottom'}},cutout:'62%'}
+  });
+  CHARTS.revMonth = new Chart(document.getElementById('cRevMonth'),{
+    type:'bar', data:{labels:[],datasets:[]},
+    options:{responsive:true,plugins:{legend:{position:'top'}},
+      scales:{x:{grid:{display:false}},y:{grid:{color:'#f0f0f0'}}}}
+  });
+  CHARTS.revDonut = new Chart(document.getElementById('cRevDonut'),{
+    type:'doughnut', data:{labels:[],datasets:[]},
+    options:{responsive:true,plugins:{legend:{position:'bottom'}},cutout:'62%'}
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   CHARTS UPDATE
+═══════════════════════════════════════════════════ */
+function updCharts(F, P) {
+  updYieldChart(F, P);
+  updHerdChart(F);
+  updFatChart(F);
+  updProdChart(F);
+  updRevPie(F);
+  updRevMonth();
+  updRevDonut(F);
+}
+
+/* — Суточный надой — */
+function updYieldChart(F, P) {
+  var dm = {};
+  F.forEach(function(r){ var d=r[C.DATE]; if(!dm[d]) dm[d]={f:0,p:0}; dm[d].f+=(+r[C.YIELD]||0); });
+  P.forEach(function(r){ var d=r[C.DATE]; if(!dm[d]) dm[d]={f:0,p:0}; dm[d].p+=(+r[C.YIELD]||0); });
+  var dates = Object.keys(dm).sort();
+  var lbls  = dates.map(function(d){ var p=String(d).split('.'); return p.length>=2?p[0]+'.'+p[1]:d; });
+  CHARTS.yield.data.labels = lbls;
+  CHARTS.yield.data.datasets = [
+    {label:'Факт',data:dates.map(function(d){return dm[d].f;}),borderColor:'#1a6b3a',
+     backgroundColor:'rgba(26,107,58,0.12)',fill:true,tension:0.35,pointRadius:2},
+    {label:'План',data:dates.map(function(d){return dm[d].p;}),borderColor:'#3498db',
+     borderDash:[6,4],backgroundColor:'transparent',tension:0.35,pointRadius:0}
+  ];
+  CHARTS.yield.update();
+}
+
+/* — Стадо — */
+function updHerdChart(F) {
+  if(!F.length) return;
+  var l = F[F.length-1];
+  var m = +l[C.MILK]||0, h = +l[C.THEAD]||0;
+  CHARTS.herd.data.labels = ['Дойные','Остальные'];
+  CHARTS.herd.data.datasets = [{data:[m,Math.max(0,h-m)],
+    backgroundColor:['#1a6b3a','#e0e0e0'],borderWidth:0}];
+  CHARTS.herd.update();
+}
+
+/* — Жирность — */
+function updFatChart(F) {
+  var dm = {};
+  F.forEach(function(r){ var d=r[C.DATE],v=+r[C.FAT]; if(v>0){if(!dm[d])dm[d]=[];dm[d].push(v);} });
+  var dates = Object.keys(dm).sort();
+  var lbls  = dates.map(function(d){ var p=String(d).split('.'); return p.length>=2?p[0]+'.'+p[1]:d; });
+  CHARTS.fat.data.labels = lbls;
+  CHARTS.fat.data.datasets = [{
+    label:'Жирность %',
+    data:dates.map(function(d){ var a=dm[d]; return a.reduce(function(s,v){return s+v;},0)/a.length; }),
+    borderColor:'#f39c12',backgroundColor:'rgba(243,156,18,0.12)',fill:true,tension:0.4,pointRadius:2
+  }];
+  CHARTS.fat.update();
+}
+
+/* — Производство по видам — */
+function updProdChart(F) {
+  var lbls=[], vals=[], cols=[];
+  PRODS.forEach(function(p){
+    var v=S(F,C['P'+p.key]);
+    if(v>0){ lbls.push(p.label); vals.push(v); cols.push(p.color); }
+  });
+  CHARTS.prod.data.labels = lbls;
+  CHARTS.prod.data.datasets = [{label:'кг',data:vals,backgroundColor:cols,borderRadius:4}];
+  CHARTS.prod.update();
+}
+
+/* — Выручка по продуктам (переработка) — */
+function updRevPie(F) {
+  var lbls=[], vals=[], cols=[];
+  PRODS.forEach(function(p){
+    var v=S(F,C['R'+p.key]);
+    if(v>0){ lbls.push(p.label); vals.push(v); cols.push(p.color); }
+  });
+  CHARTS.revPie.data.labels = lbls;
+  CHARTS.revPie.data.datasets = [{data:vals,backgroundColor:cols,borderWidth:0}];
+  CHARTS.revPie.update();
+}
+
+/* — Выручка по месяцам (вся история для компании) — */
+function updRevMonth() {
+  var byM_f={}, byM_p={};
+  MONTHS.forEach(function(m){ byM_f[m]=0; byM_p[m]=0; });
+
+  DATA.forEach(function(r){
+    var farm=String(r[C.FARM]).toLowerCase();
+    if(company==='astana'  && !farm.includes('astana'))  return;
+    if(company==='burabay' && !farm.includes('burabay')) return;
+    var t=String(r[C.TYPE]).toLowerCase(), m=r[C.MONTH];
+    if(byM_f.hasOwnProperty(m)){
+      if(t.includes('факт')) byM_f[m]+=(+r[C.RTOT]||0);
+      if(t.includes('план')) byM_p[m]+=(+r[C.RTOT]||0);
+    }
+  });
+
+  var active = MONTHS.filter(function(m){ return byM_f[m]>0||byM_p[m]>0; });
+  CHARTS.revMonth.data.labels = active;
+  CHARTS.revMonth.data.datasets = [
+    {label:'Факт',data:active.map(function(m){return byM_f[m];}),
+     backgroundColor:'rgba(26,107,58,0.85)',borderRadius:4},
+    {label:'План',data:active.map(function(m){return byM_p[m];}),
+     backgroundColor:'rgba(52,152,219,0.45)',borderRadius:4}
+  ];
+  CHARTS.revMonth.update();
+}
+
+/* — Выручка donut (финансы) — */
+function updRevDonut(F) {
+  var lbls=[], vals=[], cols=[];
+  PRODS.forEach(function(p){
+    var v=S(F,C['R'+p.key]);
+    if(v>0){ lbls.push(p.label); vals.push(v); cols.push(p.color); }
+  });
+  CHARTS.revDonut.data.labels = lbls;
+  CHARTS.revDonut.data.datasets = [{data:vals,backgroundColor:cols,borderWidth:0}];
+  CHARTS.revDonut.update();
+}
+</script>
+</body>
+</html>
